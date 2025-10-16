@@ -26,22 +26,65 @@ export type CustomRunKind = K8sResourceCommon & {
   };
 };
 
+export type UserApprover = {
+  input: ApproverInput;
+  name: string;
+};
+
+export type Approver = {
+  input: ApproverInput;
+  message?: string;
+  name: string;
+  type: 'User' | 'Group';
+  users?: UserApprover[];
+};
+export type GroupMember = {
+  name: string;
+  response: ApproverResponse;
+  message?: string;
+};
+
+export type ApproverResponseDetails = {
+  name: string;
+  response: ApproverResponse;
+  type: 'User' | 'Group';
+  message?: string;
+  groupMembers?: GroupMember[];
+};
 export type ApprovalTaskKind = K8sResourceCommon & {
   spec?: {
-    approvers: {
-      input: ApproverInput;
-      message?: string;
-      name: string;
-    }[];
+    approvers: Approver[];
+    // {
+    //   input: ApproverInput;
+    //   message?: string;
+    //   name: string;
+    //   type: 'User' | 'Group';
+    //   users?: {
+    //     nput: ApproverInput;
+    //     name: string;
+    //   }[];
+    // }[];
     numberOfApprovalsRequired: number;
     description?: string;
   };
+
   status?: {
     state: ApproverResponse;
+    approvalsReceived?: number;
+    approvalsRequired?: number;
     approvers: string[];
-    approversResponse?: {
-      name: string;
-      response: ApproverResponse;
-    }[];
+    approversResponse?: ApproverResponseDetails[];
+    //  {
+    //   name: string;
+    //   response: ApproverResponse;
+    //   type: 'User' | 'Group';
+    //   message?: string;
+    //   groupMembers?: {
+    //     name: string;
+    //     response: ApproverResponse;
+    //     message?: string;
+    //   }[];
+    // }
+    // [];
   };
 };

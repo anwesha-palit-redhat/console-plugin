@@ -18,7 +18,12 @@ import {
 import { ApprovalTaskModel } from '../../models';
 import { approvalModal } from './modal';
 import { ApproverStatusResponse } from '../../types';
+<<<<<<< Updated upstream
 import { useGetActiveUser } from '../hooks/hooks';
+=======
+import { useGetActiveUser, useGetActiveUserDetails } from '../hooks/hooks';
+import { isUserAuthorizedForApproval } from '../utils/approval-group-utils';
+>>>>>>> Stashed changes
 
 type ApprovalTaskActionDropdownProps = {
   approvalTask: ApprovalTaskKind;
@@ -30,11 +35,17 @@ const ApprovalTaskActionDropdown: React.FC<ApprovalTaskActionDropdownProps> = ({
   pipelineRun,
 }) => {
   const currentUser = useGetActiveUser();
+
+  console.log('currenuser------', currentUser);
+
+  console.log('currentusersdetails===========', useGetActiveUserDetails());
+
   const launchModal = useModal();
   const { t } = useTranslation('plugin__pipelines-console-plugin');
   const {
     metadata: { name, namespace },
-    status: { approvers, state },
+    status: { state },
+    spec: { approvers },
   } = approvalTask;
   const [isOpen, setIsOpen] = React.useState(false);
   const onToggle = () => {
@@ -69,10 +80,37 @@ const ApprovalTaskActionDropdown: React.FC<ApprovalTaskActionDropdownProps> = ({
     namespace,
   });
 
+<<<<<<< Updated upstream
+=======
+  // Check group-based authorization
+  React.useEffect(() => {
+    const checkAuthorization = async () => {
+      if (currentUser && approvers) {
+        try {
+          const authorized = await isUserAuthorizedForApproval(
+            currentUser,
+            approvers,
+          );
+          console.log('8888888', authorized);
+          setIsGroupAuthorized(authorized);
+        } catch (error) {
+          console.error('Error checking group authorization:', error);
+          setIsGroupAuthorized(false);
+        }
+      } else {
+        setIsGroupAuthorized(false);
+      }
+    };
+    checkAuthorization();
+  }, [currentUser, approvers]);
+
+>>>>>>> Stashed changes
   const isDropdownDisabled =
     !canApproveAndRejectResource ||
     state !== ApproverStatusResponse.Pending ||
     !approvers?.find((approver) => approver === currentUser);
+
+  console.log('111111111111111', isDropdownDisabled);
 
   const tooltipContent = () => {
     if (!canApproveAndRejectResource) {

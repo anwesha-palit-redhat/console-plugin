@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Label, LabelGroup } from '@patternfly/react-core';
 import {
   ApprovalTaskKind,
+  Approver,
   ApproverResponse,
   ApproverStatusResponse,
 } from '../../../types';
@@ -16,7 +17,7 @@ export interface ApproverListProps {
 }
 
 export interface ApproverBadgeProps {
-  approver: string;
+  approver: Approver;
   status: ApproverResponse;
 }
 
@@ -27,6 +28,8 @@ const ApproverBadge: React.FC<ApproverBadgeProps> = ({ approver, status }) => {
     'pipelines-approval-approver__approved':
       status !== ApproverStatusResponse.Pending,
   });
+
+  console.log('Approver', approver);
 
   const color =
     status === ApproverStatusResponse.Pending
@@ -47,7 +50,13 @@ const ApproverBadge: React.FC<ApproverBadgeProps> = ({ approver, status }) => {
         </div>
       }
     >
+<<<<<<< Updated upstream
       {approver}
+=======
+      {approver.type == 'Group'
+        ? 'Group' + ': ' + approver.name
+        : 'User' + ': ' + approver.name}
+>>>>>>> Stashed changes
     </Label>
   );
 };
@@ -55,18 +64,24 @@ const ApproverBadge: React.FC<ApproverBadgeProps> = ({ approver, status }) => {
 const ApproverListSection: React.FC<ApproverListProps> = ({ obj }) => {
   const { t } = useTranslation('plugin__pipelines-console-plugin');
   const {
-    status: { approvers, approversResponse },
+    status: { approversResponse },
+  } = obj;
+
+  const {
+    spec: { approvers },
   } = obj;
   if (!approvers || approvers?.length === 0) {
     return <p>{t('No approvers')}</p>;
   }
 
   const getApprovalStatusforApprovers = (
-    approver: string,
+    approver: Approver,
   ): ApproverResponse => {
     return (
       approversResponse?.find(
-        (approvalStatus) => approvalStatus.name === approver,
+        (approvalStatus) =>
+          approvalStatus.name === approver.name &&
+          approvalStatus.type === approver.type,
       )?.response ?? ApproverStatusResponse.Pending
     );
   };

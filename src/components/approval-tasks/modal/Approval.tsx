@@ -2,8 +2,16 @@ import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Formik, FormikValues, FormikHelpers } from 'formik';
 import { Link } from 'react-router-dom-v5-compat';
-import { ResourceIcon, k8sPatch } from '@openshift-console/dynamic-plugin-sdk';
-import { ApprovalTaskModel, PipelineRunModel } from '../../../models';
+import {
+  ResourceIcon,
+  k8sGet,
+  k8sPatch,
+} from '@openshift-console/dynamic-plugin-sdk';
+import {
+  ApprovalTaskModel,
+  GroupModel,
+  PipelineRunModel,
+} from '../../../models';
 import { getReferenceForModel } from '../../pipelines-overview/utils';
 import { ApprovalStatus, ApprovalTaskKind } from '../../../types';
 import { ModalComponent } from '@openshift-console/dynamic-plugin-sdk/lib/app/modal-support/ModalProvider';
@@ -11,6 +19,7 @@ import { ModalWrapper } from '../../modals/modal';
 import ApprovalModal from './ApprovalModal';
 
 import './ApprovalModal.scss';
+import { GroupKind } from 'src/components/utils/approval-group-utils';
 
 type ApprovalProps = {
   resource: ApprovalTaskKind;
@@ -41,7 +50,7 @@ const Approval: ModalComponent<ApprovalProps> = ({
     action: FormikHelpers<FormikValues>,
   ) => {
     const updatedApprovers = approvers.map((approver) => {
-      if (approver.name === userName) {
+      if (approver.name === userName && approver.type === 'User') {
         return {
           ...approver,
           input:
@@ -50,6 +59,37 @@ const Approval: ModalComponent<ApprovalProps> = ({
               : ApprovalStatus.Rejected,
           ...(values.reason && { message: values.reason }),
         };
+      } else if (approver.type === 'Group') {
+        ///
+
+        // try {
+        //   const authorized = await isGroupUserUpdated(
+        //     currentUser,
+        //     approver.message,
+        //   );
+        // } catch (error) {
+        //   console.error('Error checking group authorization:', error);
+        // }
+        // try {
+        //   const group = await k8sGet<GroupKind>({
+        //     model: GroupModel,
+        //     name: approver.name,
+        //   });
+        //   if (group.users && group.users.includes(currentUser)) {
+        //     return true;
+        //   }
+        // } catch (error) {
+        //   // Log error but continue checking other groups
+        //   console.warn(
+        //     `Failed to check group membership for group: ${groupName}`,
+        //     error,
+        //   );
+        // }
+
+        // const groupApprovers = approvers.filter(
+        //   (approver) => approver.type === 'Group',
+        // );
+        return approver;
       }
       return approver;
     });

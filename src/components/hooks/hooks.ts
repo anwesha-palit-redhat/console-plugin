@@ -87,3 +87,10 @@ export const useGetActiveUser = (): string => {
   );
   return currentUser?.username;
 };
+
+export const useGetActiveUserDetails = (): UserInfo => {
+  const currentUser: UserInfo = useSelector(
+    (state: SDKStoreState) => state.sdkCore.user,
+  );
+  return currentUser;
+};
