@@ -34,6 +34,7 @@ export const usePipelineMetricsForAllNamespacePoll = ({
   timespan,
   queryPrefix,
   metricsQuery,
+  timeout = 60000,
 }) => {
   const queries = metricsQueries(queryPrefix);
   return useURLPoll<PrometheusResponse>(
@@ -45,6 +46,7 @@ export const usePipelineMetricsForAllNamespacePoll = ({
       timespan,
     }),
     delay,
+    timeout,
     timespan,
   );
 };
@@ -56,6 +58,7 @@ export const usePipelineMetricsForNamespaceForPipelinePoll = ({
   queryPrefix,
   name,
   metricsQuery,
+  timeout = 60000,
 }) => {
   const queries = metricsQueries(queryPrefix);
   return useURLPoll<PrometheusResponse>(
@@ -71,6 +74,7 @@ export const usePipelineMetricsForNamespaceForPipelinePoll = ({
       namespace,
     }),
     delay,
+    timeout,
     namespace,
     timespan,
   );
@@ -82,6 +86,7 @@ export const usePipelineMetricsForNamespacePoll = ({
   timespan,
   queryPrefix,
   metricsQuery,
+  timeout = 60000,
 }) => {
   const queries = metricsQueries(queryPrefix);
   return useURLPoll<PrometheusResponse>(
@@ -96,6 +101,7 @@ export const usePipelineMetricsForNamespacePoll = ({
       namespace,
     }),
     delay,
+    timeout,
     namespace,
     timespan,
   );
