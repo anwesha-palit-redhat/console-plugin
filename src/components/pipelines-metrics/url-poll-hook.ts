@@ -29,6 +29,7 @@ export const useURLPoll: UseURLPoll = <R>(
         .then((data) => {
           setResponse(data);
           setError(null);
+          setLoading(false);
         })
         .catch((err) => {
           setError(err);
@@ -36,9 +37,10 @@ export const useURLPoll: UseURLPoll = <R>(
           if (err.name !== 'AbortError') {
             // eslint-disable-next-line no-console
             console.error(`Error polling useURLPoll: ${url} - ${err}`);
+            setLoading(false);
           }
-        })
-        .finally(() => setLoading(false));
+          // For AbortError, keep loading=true so UI shows loading state
+        });
     } else {
       handleReset();
       setLoading(false);
