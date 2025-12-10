@@ -5,11 +5,10 @@ import { useTranslation } from 'react-i18next';
 import {
   ActionGroup,
   Button,
-  Modal,
-  Text,
-  TextContent,
-  TextVariants,
+  Content,
+  ContentVariants,
 } from '@patternfly/react-core';
+import { Modal } from '@patternfly/react-core/deprecated';
 import { ButtonBar } from '../common/button-bar';
 import CloseButton from './CloseButton';
 
@@ -19,8 +18,8 @@ export const ModalTitle: React.FC<ModalTitleProps> = ({
   close,
 }) => (
   <div className={className}>
-    <TextContent>
-      <Text component={TextVariants.h1} data-test-id="modal-title">
+    <Content>
+      <Content component={ContentVariants.h1} data-test-id="modal-title">
         {children}
         {close && (
           <CloseButton
@@ -31,8 +30,8 @@ export const ModalTitle: React.FC<ModalTitleProps> = ({
             additionalClassName="co-close-button--float-right"
           />
         )}
-      </Text>
-    </TextContent>
+      </Content>
+    </Content>
   </div>
 );
 
@@ -128,8 +127,8 @@ export const ModalSubmitFooter: React.FC<ModalSubmitFooterProps> = ({
     >
       <ActionGroup
         className={classNames(
-          { 'pf-v5-c-form__actions--right': buttonAlignment === 'right' },
-          'pf-v5-c-form  pf-v5-c-form__group--no-top-margin',
+          { 'pf-v6-c-form__actions--right': buttonAlignment === 'right' },
+          'pf-v6-c-form  pf-v6-c-form__group--no-top-margin',
         )}
       >
         {buttonAlignment === 'left' ? (

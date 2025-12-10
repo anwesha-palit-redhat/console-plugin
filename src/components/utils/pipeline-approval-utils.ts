@@ -1,8 +1,8 @@
-import { global_active_color_100 as almostApprovedColor } from '@patternfly/react-tokens/dist/js/global_active_color_100';
-import { global_active_color_400 as partiallyApprovedColor } from '@patternfly/react-tokens/dist/js/global_active_color_400';
-import { global_palette_black_500 as waitColor } from '@patternfly/react-tokens/dist/js/global_palette_black_500';
-import { global_palette_green_500 as approveColor } from '@patternfly/react-tokens/dist/js/global_palette_green_500';
-import { global_palette_red_100 as rejectColor } from '@patternfly/react-tokens/dist/js/global_palette_red_100';
+import { t_temp_dev_tbd as almostApprovedColor /* CODEMODS: you should update this color token, original v5 token was global_active_color_100 */ } from "@patternfly/react-tokens/dist/js/t_temp_dev_tbd";
+import { t_temp_dev_tbd as partiallyApprovedColor /* CODEMODS: you should update this color token, original v5 token was global_active_color_400 */ } from "@patternfly/react-tokens/dist/js/t_temp_dev_tbd";
+import { t_temp_dev_tbd as waitColor /* CODEMODS: you should update this color token, original v5 token was global_palette_black_500 */ } from "@patternfly/react-tokens/dist/js/t_temp_dev_tbd";
+import { t_temp_dev_tbd as approveColor /* CODEMODS: you should update this color token, original v5 token was global_palette_green_500 */ } from "@patternfly/react-tokens/dist/js/t_temp_dev_tbd";
+import { t_temp_dev_tbd as rejectColor /* CODEMODS: you should update this color token, original v5 token was global_palette_red_100 */ } from "@patternfly/react-tokens/dist/js/t_temp_dev_tbd";
 import { ApprovalFields, ApprovalLabels } from '../../consts';
 import {
   ApprovalStatus,

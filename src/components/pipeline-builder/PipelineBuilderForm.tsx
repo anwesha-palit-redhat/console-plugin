@@ -237,7 +237,7 @@ const PipelineBuilderForm: React.FC<PipelineBuilderFormProps> = (props) => {
               className="opp-pipeline-builder-form"
               onSubmit={handleSubmit}
             >
-              <PageSection isFilled variant="light">
+              <PageSection hasBodyWrapper={false} isFilled >
                 <FormBody
                   flexLayout
                   disablePaneBody
