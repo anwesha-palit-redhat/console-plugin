@@ -238,16 +238,30 @@ const PipelinesRunsNumbersChart: FC<PipelinesRunsNumbersChartProps> = ({
         className={classNames({
           'pipeline-overview__number-of-plr-card': !pipelineRunsChartError,
           'card-border': bordered,
+          'pf-v6-u-h-100': !pipelineRunsChartError,
         })}
+        style={{
+          minHeight: '220px',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
       >
-        <CardTitle className="pipeline-overview__number-of-plr-card__title">
+        <CardTitle className="pf-v6-u-pb-0">
           <span>{t('Number of PipelineRuns')}</span>
         </CardTitle>
         <CardBody
-          className={classNames({
-            'pipeline-overview__number-of-plr-card__body':
-              !pipelineRunsChartError,
-          })}
+          style={{
+            ...(!pipelineRunsChartError && {
+              flex: '1 1 0',
+              minHeight: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'flex-end',
+              alignItems: 'flex-start',
+              padding: 0,
+            }),
+          }}
         >
           {pipelineRunsChartError ? (
             <Alert
@@ -257,7 +271,12 @@ const PipelinesRunsNumbersChart: FC<PipelinesRunsNumbersChartProps> = ({
               className="pf-v6-u-mb-md pf-v6-u-ml-lg pf-v6-u-mt-lg"
             />
           ) : (
-            <div className="pipeline-overview__number-of-plr-card__bar-chart-div">
+            <div
+              style={{
+                minHeight: 145,
+                flexShrink: 0,
+              }}
+            >
               {loaded ? (
                 <Chart
                   containerComponent={
@@ -274,7 +293,8 @@ const PipelinesRunsNumbersChart: FC<PipelinesRunsNumbersChartProps> = ({
                   padding={{
                     top: 10,
                     bottom: 55,
-                    left: 50,
+                    left: 40,
+                    right: 50,
                   }}
                   themeColor={ChartThemeColor.blue}
                 >
@@ -290,7 +310,7 @@ const PipelinesRunsNumbersChart: FC<PipelinesRunsNumbersChartProps> = ({
                   </ChartGroup>
                 </Chart>
               ) : (
-                <div className="pipeline-overview__number-of-plr-card__loading pf-v6-u-h-100">
+                <div className="pipeline-overview__number-of-plr-card__loading pf-v6-u-pl-md pf-v6-u-h-100">
                   <LoadingInline />
                 </div>
               )}

@@ -21,8 +21,7 @@ import { ALL_NAMESPACES_KEY } from '../../consts';
 import { getDropDownDate } from './dateTime';
 import { LoadingInline } from '../Loading';
 import { DataType, FLAGS } from '../../types';
-
-import './PipelineRunsTotalCard.scss';
+import { t_chart_color_blue_300 as blueColor } from '@patternfly/react-tokens/dist/js/t_chart_color_blue_300';
 
 interface PipelinesRunsDurationProps {
   namespace: string;
@@ -152,7 +151,7 @@ const PipelinesRunsTotalCard: FC<PipelinesRunsDurationProps> = ({
   return (
     <>
       <Card
-        className={classNames('pipeline-overview__totals-card', {
+        className={classNames('pf-v6-u-h-100', {
           'card-border': bordered,
         })}
       >
@@ -170,13 +169,10 @@ const PipelinesRunsTotalCard: FC<PipelinesRunsDurationProps> = ({
             />
           ) : (
             <>
-              <Grid hasGutter className="pipeline-overview__totals-card__grid">
-                <GridItem span={9}>
+              <Grid hasGutter>
+                <GridItem span={9} className="pf-v6-u-mb-sm">
                   <span>
-                    <Label
-                      variant="outline"
-                      className="pipeline-overview__totals-card__label"
-                    >
+                    <Label variant="outline" className="pf-v6-u-mr-sm">
                       {PipelineModel.abbr}
                     </Label>
                     {t('Runs in pipelines')}
@@ -184,18 +180,16 @@ const PipelinesRunsTotalCard: FC<PipelinesRunsDurationProps> = ({
                 </GridItem>
                 <GridItem
                   span={3}
-                  className="pipeline-overview__totals-card__value"
+                  className="pf-v6-u-text-align-end"
+                  style={{ color: blueColor.value }}
                 >
                   {loaded ? plrRun : <LoadingInline />}
                 </GridItem>
               </Grid>
-              <Grid hasGutter className="pipeline-overview__totals-card__grid">
+              <Grid hasGutter className="pf-v6-u-mb-sm">
                 <GridItem span={9}>
                   <span>
-                    <Label
-                      variant="outline"
-                      className="pipeline-overview__totals-card__repo-label"
-                    >
+                    <Label variant="outline" className="pf-v6-u-mr-sm">
                       {RepositoryModel.abbr}
                     </Label>
                     {t('Runs in repositories')}
@@ -203,21 +197,23 @@ const PipelinesRunsTotalCard: FC<PipelinesRunsDurationProps> = ({
                 </GridItem>
                 <GridItem
                   span={3}
-                  className="pipeline-overview__totals-card__value"
+                  className="pf-v6-u-text-align-end"
+                  style={{ color: blueColor.value }}
                 >
                   {loaded ? repoRun : <LoadingInline />}
                 </GridItem>
               </Grid>
-              <Grid hasGutter>
+              <Grid hasGutter className="pf-v6-u-mb-sm">
                 <GridItem span={9}>
                   <span>
-                    <CheckIcon className="pipeline-overview__totals-card__icon" />
+                    <CheckIcon className="pipeline-overview__totals-card__icon pf-v6-u-ml-sm pf-v6-u-mr-sm" />
                     {t('Total runs')}
                   </span>
                 </GridItem>
                 <GridItem
                   span={3}
-                  className="pipeline-overview__totals-card__value"
+                  className="pf-v6-u-text-align-end"
+                  style={{ color: blueColor.value }}
                 >
                   {loaded ? totalRun : <LoadingInline />}
                 </GridItem>

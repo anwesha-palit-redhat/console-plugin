@@ -7,6 +7,7 @@ import {
   InfoCircleIcon,
   MonitoringIcon,
 } from '@patternfly/react-icons';
+import { t_chart_color_blue_300 as blueColor } from '@patternfly/react-tokens/dist/js/t_chart_color_blue_300';
 import {
   Alert,
   Card,
@@ -25,7 +26,6 @@ import {
 
 import { ALL_NAMESPACES_KEY } from '../../consts';
 
-import './PipelineRunsDurationCard.scss';
 import {
   usePipelineMetricsForAllNamespacePoll,
   usePipelineMetricsForNamespaceForPipelinePoll,
@@ -184,15 +184,16 @@ const PipelineRunsDurationCardK8s: FC<PipelinesRunsDurationProps> = ({
   return (
     <>
       <Card
-        className={classNames('pipeline-overview__duration-card', {
+        className={classNames('pf-v6-u-h-100', {
           'card-border': bordered,
         })}
+        style={{ minWidth: '100%', fontSize: 18 }}
       >
-        <CardTitle>
+        <CardTitle style={{ fontSize: 20 }}>
           <span>{t('Duration')}</span>
         </CardTitle>
         <Divider />
-        <CardBody>
+        <CardBody style={{ fontSize: 18, minWidth: 'min-content' }}>
           {pipelineRunsDurationError ? (
             <Alert
               variant="danger"
@@ -204,17 +205,19 @@ const PipelineRunsDurationCardK8s: FC<PipelinesRunsDurationProps> = ({
             <>
               <Grid
                 hasGutter
-                className="pipeline-overview__duration-card__grid"
+                className="pf-v6-u-mb-sm"
+                style={{ fontSize: 18 }}
               >
-                <GridItem span={6}>
-                  <span>
-                    <MonitoringIcon className="pipeline-overview__duration-card__icon" />
+                <GridItem span={9} className="pf-v6-u-mb-sm">
+                  <span style={{ fontSize: 18 }}>
+                    <MonitoringIcon className="pf-v6-u-mr-sm" />
                     {t('Average duration')}
                   </span>
                 </GridItem>
                 <GridItem
-                  span={6}
-                  className="pipeline-overview__duration-card__value"
+                  span={3}
+                  style={{ color: blueColor.value, fontSize: 18 }}
+                  className="pf-v6-u-text-align-end"
                 >
                   {loadingPipelineRunsCount ? (
                     <LoadingInline />
@@ -225,31 +228,37 @@ const PipelineRunsDurationCardK8s: FC<PipelinesRunsDurationProps> = ({
               </Grid>
               <Grid
                 hasGutter
-                className="pipeline-overview__duration-card__grid"
+                className="pf-v6-u-mb-sm"
+                style={{ fontSize: 18 }}
               >
-                <GridItem span={6}>
-                  <span>
-                    <InfoCircleIcon className="pipeline-overview__duration-card__info-icon" />
+                <GridItem span={9} className="pf-v6-u-mb-sm">
+                  <span style={{ fontSize: 18 }}>
+                    <InfoCircleIcon
+                      style={{ color: blueColor.value }}
+                      className="pf-v6-u-mr-sm"
+                    />
                     {t('Maximum')}
                   </span>
                 </GridItem>
                 <GridItem
-                  span={6}
-                  className="pipeline-overview__duration-card__value"
+                  span={3}
+                  style={{ color: blueColor.value, fontSize: 18 }}
+                  className="pf-v6-u-text-align-end"
                 >
                   {loadingPipelineRunsCount ? <LoadingInline /> : '-'}
                 </GridItem>
               </Grid>
-              <Grid hasGutter>
-                <GridItem span={6}>
-                  <span>
-                    <HistoryIcon className="pipeline-overview__duration-card__icon" />
+              <Grid hasGutter style={{ fontSize: 18 }}>
+                <GridItem span={9}>
+                  <span style={{ fontSize: 18 }}>
+                    <HistoryIcon className="pf-v6-u-mr-sm" />
                     {t('Total duration')}
                   </span>
                 </GridItem>
                 <GridItem
-                  span={6}
-                  className="pipeline-overview__duration-card__value"
+                  span={3}
+                  className="pf-v6-u-text-align-end"
+                  style={{ color: blueColor.value, fontSize: 18 }}
                 >
                   {loadingPipelineRunsDuration ? (
                     <LoadingInline />

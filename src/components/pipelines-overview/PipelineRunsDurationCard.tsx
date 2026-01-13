@@ -16,6 +16,7 @@ import {
   Grid,
   GridItem,
 } from '@patternfly/react-core';
+import { t_chart_color_blue_300 as blueColor } from '@patternfly/react-tokens/dist/js/t_chart_color_blue_300';
 import { useFlag } from '@openshift-console/dynamic-plugin-sdk';
 import { SummaryProps, getFilter, useInterval } from './utils';
 import { getResultsSummary } from '../utils/summary-api';
@@ -23,8 +24,6 @@ import { DataType, FLAGS } from '../../types';
 import { ALL_NAMESPACES_KEY } from '../../consts';
 import { formatTime, getDropDownDate } from './dateTime';
 import { LoadingInline } from '../Loading';
-
-import './PipelineRunsDurationCard.scss';
 
 interface PipelinesRunsDurationProps {
   namespace: string;
@@ -112,7 +111,7 @@ const PipelinesRunsDurationCard: FC<PipelinesRunsDurationProps> = ({
   return (
     <>
       <Card
-        className={classNames('pipeline-overview__duration-card', {
+        className={classNames('pf-v6-u-h-100', {
           'card-border': bordered,
         })}
       >
@@ -130,19 +129,17 @@ const PipelinesRunsDurationCard: FC<PipelinesRunsDurationProps> = ({
             />
           ) : (
             <>
-              <Grid
-                hasGutter
-                className="pipeline-overview__duration-card__grid"
-              >
-                <GridItem span={6}>
+              <Grid hasGutter className="cpf-v6-u-mb-sm">
+                <GridItem span={9} className="pf-v6-u-mb-sm">
                   <span>
-                    <MonitoringIcon className="pipeline-overview__duration-card__icon" />
+                    <MonitoringIcon className="pf-v6-u-mr-sm" />
                     {t('Average duration')}
                   </span>
                 </GridItem>
                 <GridItem
-                  span={6}
-                  className="pipeline-overview__duration-card__value"
+                  span={3}
+                  style={{ color: blueColor.value }}
+                  className="pf-v6-u-text-align-end"
                 >
                   {loaded ? (
                     summaryData?.['avg_duration'] ? (
@@ -155,19 +152,20 @@ const PipelinesRunsDurationCard: FC<PipelinesRunsDurationProps> = ({
                   )}
                 </GridItem>
               </Grid>
-              <Grid
-                hasGutter
-                className="pipeline-overview__duration-card__grid"
-              >
-                <GridItem span={6}>
+              <Grid hasGutter className="pf-v6-u-mb-sm">
+                <GridItem span={9} className="pf-v6-u-mb-sm">
                   <span>
-                    <InfoCircleIcon className="pipeline-overview__duration-card__info-icon" />
+                    <InfoCircleIcon
+                      className="pf-v6-u-mr-sm"
+                      style={{ color: blueColor.value }}
+                    />
                     {t('Maximum')}
                   </span>
                 </GridItem>
                 <GridItem
-                  span={6}
-                  className="pipeline-overview__duration-card__value"
+                  span={3}
+                  className="pf-v6-u-text-align-end"
+                  style={{ color: blueColor.value }}
                 >
                   {loaded ? (
                     summaryData?.['max_duration'] ? (
@@ -181,15 +179,16 @@ const PipelinesRunsDurationCard: FC<PipelinesRunsDurationProps> = ({
                 </GridItem>
               </Grid>
               <Grid hasGutter>
-                <GridItem span={6}>
+                <GridItem span={9}>
                   <span>
-                    <HistoryIcon className="pipeline-overview__duration-card__icon" />
+                    <HistoryIcon className="pf-v6-u-mr-sm" />
                     {t('Total duration')}
                   </span>
                 </GridItem>
                 <GridItem
-                  span={6}
-                  className="pipeline-overview__duration-card__value"
+                  span={3}
+                  className="pf-v6-u-text-align-end"
+                  style={{ color: blueColor.value }}
                 >
                   {loaded ? (
                     summaryData?.['total_duration'] ? (
