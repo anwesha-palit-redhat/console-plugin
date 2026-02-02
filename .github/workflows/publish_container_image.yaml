@@ -6,7 +6,6 @@ on:
       - main
       - release-v* # example: release-v1.14
       - main_ocp_4.22
-      - test_yarn4
     tags: ['v*']
   pull_request:
     branches:
