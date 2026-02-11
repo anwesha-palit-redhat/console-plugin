@@ -14,11 +14,11 @@ RUN if [[ -d /cachi2/output/deps/npm/ ]]; then \
       exit 1; \
     fi
 
-
 # Install dependencies & build
 USER root
 RUN CYPRESS_INSTALL_BINARY=0 yarn install --immutable && \
     yarn build
+
 
 FROM $RUNTIME
 ARG VERSION=console-plugin-1.16.4
