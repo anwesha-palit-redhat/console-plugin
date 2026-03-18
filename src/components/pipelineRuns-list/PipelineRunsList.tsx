@@ -13,7 +13,7 @@ import { usePipelineRunsFilters } from './usePipelineRunsFilters';
 import { PipelineRunKind } from '../../types';
 import { useGetPipelineRuns } from '../hooks/useTektonResult';
 import PipelineRunsRow from './PipelineRunsRow';
-import { useLoadMoreOnScroll } from '../utils/tekton-results';
+//import { useLoadMoreOnScroll } from '../utils/tekton-results';
 import { useGetActiveUser } from '../hooks/hooks';
 import { ListPageFilter } from '../list-pages/ListPageFilter';
 
@@ -49,18 +49,14 @@ const PipelineRunsList: FC<PipelineRunsListProps> = ({
     ? 5
     : 4;
 
-  const [
-    pipelineRuns,
-    pipelineRunsLoaded,
-    pipelineRunsLoadError,
-    nextPageToken,
-  ] = useGetPipelineRuns(namespace, { name: PLRsForName, kind: PLRsForKind });
+  const [pipelineRuns, pipelineRunsLoaded, pipelineRunsLoadError] =
+    useGetPipelineRuns(namespace, { name: PLRsForName, kind: PLRsForKind });
   const [data, filteredData, onFilterChange] = useListPageFilter(
     pipelineRuns,
     filters,
   );
 
-  useLoadMoreOnScroll(loadMoreRef, nextPageToken, pipelineRunsLoaded);
+  //useLoadMoreOnScroll(loadMoreRef, nextPageToken, pipelineRunsLoaded);
 
   return (
     <ListPageBody>

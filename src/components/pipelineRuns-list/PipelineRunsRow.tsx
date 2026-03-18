@@ -272,12 +272,12 @@ const PipelineRunRowWithoutTaskRuns: FC<PipelineRunRowWithoutTaskRunsProps> =
 const PipelineRunRowWithTaskRunsFetch: FC<PipelineRunRowWithTaskRunsProps> =
   memo(({ obj, activeColumnIDs, repositoryPLRs, currentUser }) => {
     const cacheKey = `${obj.metadata.namespace}-${obj.metadata.name}`;
-    const [PLRTaskRuns, taskRunsLoaded] = useTaskRuns(
+    const [PLRTaskRuns, k8sLoaded, trLoaded] = useTaskRuns(
       obj.metadata.namespace,
       obj.metadata.name,
-      undefined,
       `${obj.metadata.namespace}-${obj.metadata.name}`,
     );
+    const taskRunsLoaded = k8sLoaded && trLoaded;
     InFlightStoreForTaskRunsForPLR[cacheKey] = false;
     if (taskRunsLoaded) {
       TASKRUNSFORPLRCACHE[cacheKey] = PLRTaskRuns;
@@ -295,8 +295,8 @@ const PipelineRunRowWithTaskRunsFetch: FC<PipelineRunRowWithTaskRunsProps> =
     );
   });
 
-const PipelineRunRowWithTaskRuns: FC<PipelineRunRowWithTaskRunsProps> =
-  memo(({ obj, activeColumnIDs, repositoryPLRs, currentUser }) => {
+const PipelineRunRowWithTaskRuns: FC<PipelineRunRowWithTaskRunsProps> = memo(
+  ({ obj, activeColumnIDs, repositoryPLRs, currentUser }) => {
     let PLRTaskRuns: TaskRunKind[];
     let taskRunsLoaded: boolean;
     const cacheKey = `${obj.metadata.namespace}-${obj.metadata.name}`;
@@ -328,7 +328,8 @@ const PipelineRunRowWithTaskRuns: FC<PipelineRunRowWithTaskRunsProps> =
         currentUser={currentUser}
       />
     );
-  });
+  },
+);
 
 const PipelineRunRow: FC<
   RowProps<

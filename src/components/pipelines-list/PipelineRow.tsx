@@ -148,8 +148,8 @@ const PipelineRowTable = ({
   );
 };
 
-const PipelineRowWithoutTaskRuns: FC<PipelineRowWithoutTaskRunsProps> =
-  memo(({ obj, taskRunStatusObj, activeColumnIDs }) => {
+const PipelineRowWithoutTaskRuns: FC<PipelineRowWithoutTaskRunsProps> = memo(
+  ({ obj, taskRunStatusObj, activeColumnIDs }) => {
     return (
       <PipelineRowTable
         obj={obj}
@@ -159,17 +159,18 @@ const PipelineRowWithoutTaskRuns: FC<PipelineRowWithoutTaskRunsProps> =
         activeColumnIDs={activeColumnIDs}
       />
     );
-  });
+  },
+);
 
-const PipelineRowWithTaskRunsFetch: FC<PipelineRowWithTaskRunsProps> =
-  memo(({ obj, activeColumnIDs }) => {
+const PipelineRowWithTaskRunsFetch: FC<PipelineRowWithTaskRunsProps> = memo(
+  ({ obj, activeColumnIDs }) => {
     const cacheKey = `${obj.latestRun.metadata.namespace}-${obj.latestRun.metadata.name}`;
-    const [PLRTaskRuns, taskRunsLoaded] = useTaskRuns(
+    const [PLRTaskRuns, k8sLoaded, trLoaded] = useTaskRuns(
       obj.latestRun.metadata.namespace,
       obj.latestRun.metadata.name,
-      undefined,
       `${obj.latestRun.metadata.namespace}-${obj.latestRun.metadata.name}`,
     );
+    const taskRunsLoaded = k8sLoaded && trLoaded;
     InFlightStoreForTaskRunsForPLR[cacheKey] = false;
     if (taskRunsLoaded) {
       TASKRUNSFORPLRCACHE[cacheKey] = PLRTaskRuns;
@@ -183,10 +184,11 @@ const PipelineRowWithTaskRunsFetch: FC<PipelineRowWithTaskRunsProps> =
         activeColumnIDs={activeColumnIDs}
       />
     );
-  });
+  },
+);
 
-const PipelineRowWithTaskRuns: FC<PipelineRowWithTaskRunsProps> =
-  memo(({ obj, activeColumnIDs }) => {
+const PipelineRowWithTaskRuns: FC<PipelineRowWithTaskRunsProps> = memo(
+  ({ obj, activeColumnIDs }) => {
     let PLRTaskRuns: TaskRunKind[];
     let taskRunsLoaded: boolean;
     const cacheKey = `${obj.latestRun.metadata.namespace}-${obj.latestRun.metadata.name}`;
@@ -215,7 +217,8 @@ const PipelineRowWithTaskRuns: FC<PipelineRowWithTaskRunsProps> =
         activeColumnIDs={activeColumnIDs}
       />
     );
-  });
+  },
+);
 
 const PipelineRow: FC<RowProps<PipelineWithLatest>> = ({
   obj,
