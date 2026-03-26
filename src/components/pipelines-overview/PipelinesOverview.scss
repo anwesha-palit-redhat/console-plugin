@@ -1,0 +1,25 @@
+.pipeline-overview {
+  &__chart-color-blue {
+    color: var(--pf-t--chart--color--blue--300);
+  }
+
+  &__min-width-full {
+    min-width: 100%;
+  }
+
+  &__min-width-min-content {
+    min-width: min-content;
+  }
+
+  &__overflow-hidden {
+    overflow: hidden;
+  }
+
+  &__chart-area {
+    min-height: 200px;
+  }
+
+  &__min-height-0 {
+    min-height: 0;
+  }
+}

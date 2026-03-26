@@ -29,6 +29,8 @@ import { ALL_NAMESPACES_KEY } from '../../consts';
 import { getFilter, useInterval } from './utils';
 import { LoadingInline } from '../Loading';
 
+import './PipelinesOverview.scss';
+
 interface PipelinesRunsNumbersChartProps {
   namespace?: string;
   timespan?: number;
@@ -235,33 +237,19 @@ const PipelinesRunsNumbersChart: FC<PipelinesRunsNumbersChartProps> = ({
   return (
     <>
       <Card
-        className={classNames({
+        className={classNames('pipeline-overview__overflow-hidden pf-v6-u-display-flex pf-v6-u-flex-direction-column', {
           'pipeline-overview__number-of-plr-card': !pipelineRunsChartError,
           'card-border': bordered,
           'pf-v6-u-h-100': !pipelineRunsChartError,
         })}
-        style={{
-          minHeight: '220px',
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
       >
         <CardTitle className="pf-v6-u-pb-0">
           <span>{t('Number of PipelineRuns')}</span>
         </CardTitle>
         <CardBody
-          style={{
-            ...(!pipelineRunsChartError && {
-              flex: '1 1 0',
-              minHeight: 0,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'flex-end',
-              alignItems: 'flex-start',
-              padding: 0,
-            }),
-          }}
+          className={classNames({
+            'pf-v6-u-flex-1 pipeline-overview__min-height-0 pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-justify-content-flex-end pf-v6-u-align-items-flex-start pf-v6-u-p-0': !pipelineRunsChartError,
+          })}
         >
           {pipelineRunsChartError ? (
             <Alert
@@ -272,10 +260,7 @@ const PipelinesRunsNumbersChart: FC<PipelinesRunsNumbersChartProps> = ({
             />
           ) : (
             <div
-              style={{
-                minHeight: 145,
-                flexShrink: 0,
-              }}
+              className="pf-v6-u-flex-shrink-0"
             >
               {loaded ? (
                 <Chart

@@ -34,6 +34,8 @@ import {
 } from '../pipelines-metrics/utils';
 import { LoadingInline } from '../Loading';
 
+import './PipelinesOverview.scss';
+
 interface PipelinesRunsNumbersChartProps {
   namespace?: string;
   timespan?: number;
@@ -257,35 +259,17 @@ const PipelineRunsNumbersChartK8s: FC<PipelinesRunsNumbersChartProps> = ({
     <>
       <Card
         className={classNames({
-          'pf-v6-u-h-100': !pipelineRunsChartError,
+          'pf-v6-u-h-100 pipeline-overview__overflow-hidden pf-v6-u-display-flex pf-v6-u-flex-direction-column': !pipelineRunsChartError,
           'card-border': bordered,
         })}
-        style={
-          !pipelineRunsChartError
-            ? {
-                minHeight: '220px',
-                overflow: 'hidden',
-                display: 'flex',
-                flexDirection: 'column',
-              }
-            : undefined
-        }
       >
         <CardTitle className="pf-v6-u-pb-0">
           <span>{t('Number of PipelineRuns')}</span>
         </CardTitle>
         <CardBody
-          style={{
-            ...(!pipelineRunsChartError && {
-              flex: '1 1 0',
-              minHeight: 0,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'flex-end',
-              alignItems: 'flex-start',
-              padding: 0,
-            }),
-          }}
+          className={classNames({
+            'pf-v6-u-flex-1 pipeline-overview__min-height-0 pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-justify-content-flex-end pf-v6-u-align-items-flex-start pf-v6-u-p-0': !pipelineRunsChartError,
+          })}
         >
           {pipelineRunsChartError ? (
             <Alert
@@ -296,10 +280,7 @@ const PipelineRunsNumbersChartK8s: FC<PipelinesRunsNumbersChartProps> = ({
             />
           ) : (
             <div
-              style={{
-                minHeight: 145,
-                flexShrink: 0,
-              }}
+              className="pf-v6-u-flex-shrink-0"
             >
               {loadingRunSuccessRatioData ? (
                 <LoadingInline />

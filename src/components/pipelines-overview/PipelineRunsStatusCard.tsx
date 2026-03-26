@@ -44,6 +44,8 @@ import { ALL_NAMESPACES_KEY } from '../../consts';
 import { DataType, FLAGS, SummaryResponse } from '../../types';
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons';
 
+import './PipelinesOverview.scss';
+
 interface PipelinesRunsStatusCardProps {
   timespan?: number;
   domain?: DomainPropType;
@@ -430,8 +432,8 @@ const PipelinesRunsStatusCard: FC<PipelinesRunsStatusCardProps> = ({
           ) : (
             <Grid className="pf-v6-u-align-items-center">
               <GridItem xl2={4} xl={12} lg={12} md={12} sm={12}>
-                {loaded ? (
-                  <div className="pf-v6-u-display-flex pf-v6-u-align-items-center">
+                <div className="pf-v6-u-display-flex pf-v6-u-align-items-center pipeline-overview__chart-area">
+                  {loaded ? (
                     <ChartDonut
                       constrainToVisibleArea={true}
                       data={donutData}
@@ -479,13 +481,13 @@ const PipelinesRunsStatusCard: FC<PipelinesRunsStatusCardProps> = ({
                       }
                       width={350}
                     />
-                  </div>
-                ) : (
-                  <LoadingInline />
-                )}
+                  ) : (
+                    <LoadingInline />
+                  )}
+                </div>
               </GridItem>
               <GridItem xl2={8} xl={12} lg={12} md={12} sm={12}>
-                <div className="pf-v6-u-display-flex pf-v6-u-align-items-flex-end pf-v6-u-h-100">
+                <div className="pf-v6-u-display-flex pf-v6-u-align-items-flex-end pf-v6-u-h-100 pipeline-overview__chart-area">
                   {loaded ? (
                     <Chart
                       containerComponent={

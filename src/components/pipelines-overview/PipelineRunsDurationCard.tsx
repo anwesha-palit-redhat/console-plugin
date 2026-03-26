@@ -16,7 +16,6 @@ import {
   Grid,
   GridItem,
 } from '@patternfly/react-core';
-import { t_chart_color_blue_300 as blueColor } from '@patternfly/react-tokens/dist/js/t_chart_color_blue_300';
 import { useFlag } from '@openshift-console/dynamic-plugin-sdk';
 import { SummaryProps, getFilter, useInterval } from './utils';
 import { getResultsSummary } from '../utils/summary-api';
@@ -24,6 +23,8 @@ import { DataType, FLAGS } from '../../types';
 import { ALL_NAMESPACES_KEY } from '../../consts';
 import { formatTime, getDropDownDate } from './dateTime';
 import { LoadingInline } from '../Loading';
+
+import './PipelinesOverview.scss';
 
 interface PipelinesRunsDurationProps {
   namespace: string;
@@ -47,8 +48,9 @@ const PipelinesRunsDurationCard: FC<PipelinesRunsDurationProps> = ({
   const isDevConsoleProxyAvailable = useFlag(FLAGS.DEVCONSOLE_PROXY);
   const [summaryData, setSummaryData] = useState<SummaryProps>({});
   const [loaded, setLoaded] = useState(false);
-  const [pipelineRunsDurationError, setPipelineRunsDurationError] =
-    useState<string | undefined>();
+  const [pipelineRunsDurationError, setPipelineRunsDurationError] = useState<
+    string | undefined
+  >();
   const abortControllerRef = useRef<AbortController>();
 
   if (namespace == ALL_NAMESPACES_KEY) {
@@ -138,8 +140,7 @@ const PipelinesRunsDurationCard: FC<PipelinesRunsDurationProps> = ({
                 </GridItem>
                 <GridItem
                   span={3}
-                  style={{ color: blueColor.value }}
-                  className="pf-v6-u-text-align-end"
+                  className="pf-v6-u-text-align-end pipeline-overview__chart-color-blue"
                 >
                   {loaded ? (
                     summaryData?.['avg_duration'] ? (
@@ -155,17 +156,13 @@ const PipelinesRunsDurationCard: FC<PipelinesRunsDurationProps> = ({
               <Grid hasGutter className="pf-v6-u-mb-sm">
                 <GridItem span={9} className="pf-v6-u-mb-sm">
                   <span>
-                    <InfoCircleIcon
-                      className="pf-v6-u-mr-sm"
-                      style={{ color: blueColor.value }}
-                    />
+                    <InfoCircleIcon className="pf-v6-u-mr-sm pipeline-overview__chart-color-blue" />
                     {t('Maximum')}
                   </span>
                 </GridItem>
                 <GridItem
                   span={3}
-                  className="pf-v6-u-text-align-end"
-                  style={{ color: blueColor.value }}
+                  className="pf-v6-u-text-align-end pipeline-overview__chart-color-blue"
                 >
                   {loaded ? (
                     summaryData?.['max_duration'] ? (
@@ -187,8 +184,7 @@ const PipelinesRunsDurationCard: FC<PipelinesRunsDurationProps> = ({
                 </GridItem>
                 <GridItem
                   span={3}
-                  className="pf-v6-u-text-align-end"
-                  style={{ color: blueColor.value }}
+                  className="pf-v6-u-text-align-end pipeline-overview__chart-color-blue"
                 >
                   {loaded ? (
                     summaryData?.['total_duration'] ? (

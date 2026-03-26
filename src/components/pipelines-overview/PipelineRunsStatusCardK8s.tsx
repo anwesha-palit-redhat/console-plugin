@@ -51,6 +51,8 @@ import {
 import { getTotalPipelineRuns, isMatchingFirstTickValue } from './utils';
 import { LoadingInline } from '../Loading';
 
+import './PipelinesOverview.scss';
+
 interface PipelinesRunsStatusCardProps {
   timespan?: number;
   domain?: DomainPropType;
@@ -565,10 +567,10 @@ const PipelineRunsStatusCardK8s: FC<PipelinesRunsStatusCardProps> = ({
           ) : (
             <Grid className="pf-v6-u-align-items-center">
               <GridItem xl2={4} xl={12} lg={12} md={12} sm={12}>
-                {loadingRunSuccessRatioData ? (
-                  <LoadingInline />
-                ) : (
-                  <div>
+                <div className="pipeline-overview__chart-area">
+                  {loadingRunSuccessRatioData ? (
+                    <LoadingInline />
+                  ) : (
                     <ChartDonut
                       constrainToVisibleArea={true}
                       data={donutDataK8s}
@@ -618,11 +620,11 @@ const PipelineRunsStatusCardK8s: FC<PipelinesRunsStatusCardProps> = ({
                       }
                       width={350}
                     />
-                  </div>
-                )}
+                  )}
+                </div>
               </GridItem>
               <GridItem xl2={8} xl={12} lg={12} md={12} sm={12}>
-                <div className="pf-v6-u-display-flex pf-v6-u-align-items-flex-end pf-v6-u-h-100">
+                <div className="pf-v6-u-display-flex pf-v6-u-align-items-flex-end pf-v6-u-h-100 pipeline-overview__chart-area">
                   {loadingTotalPipelineRunsData ? (
                     <LoadingInline />
                   ) : (

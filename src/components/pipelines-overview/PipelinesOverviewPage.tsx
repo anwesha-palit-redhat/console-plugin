@@ -23,6 +23,8 @@ import {
   usePersistedIntervalWithUrl,
 } from '../hooks/usePersistedFiltersForPipelineOverview';
 
+import './PipelinesOverview.scss';
+
 const PipelinesOverviewPage: FC = () => {
   const { t } = useTranslation('plugin__pipelines-console-plugin');
   const canListNS = useFlag(FLAGS.CAN_LIST_NS);
@@ -84,6 +86,7 @@ const PipelinesOverviewPage: FC = () => {
           className="pf-v6-u-mt-md"
           alignItems={{ default: 'alignItemsStretch' }}
           gap={{ default: 'gapMd' }}
+          flexWrap={{ default: 'wrap' }}
         >
           <FlexItem flex={{ default: 'flex_1' }}>
             <PipelinesRunsDurationCard
@@ -101,7 +104,7 @@ const PipelinesOverviewPage: FC = () => {
               bordered={true}
             />
           </FlexItem>
-          <FlexItem flex={{ default: 'flex_2' }}>
+          <FlexItem flex={{ default: 'flexNone', xl: 'flex_2' }} className="pf-v6-u-w-100">
             <PipelinesRunsNumbersChart
               namespace={activeNamespace}
               timespan={timespan}

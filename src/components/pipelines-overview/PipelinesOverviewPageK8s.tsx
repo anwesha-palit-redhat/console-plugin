@@ -24,6 +24,8 @@ import {
   usePersistedIntervalWithUrl,
 } from '../hooks/usePersistedFiltersForPipelineOverview';
 
+import './PipelinesOverview.scss';
+
 const PipelinesOverviewPageK8s: FC = () => {
   const { t } = useTranslation('plugin__pipelines-console-plugin');
   const canListNS = useFlag(FLAGS.CAN_LIST_NS);
@@ -106,7 +108,10 @@ const PipelinesOverviewPageK8s: FC = () => {
               bordered={true}
             />
           </FlexItem>
-          <FlexItem flex={{ default: 'flex_2' }}>
+          <FlexItem
+            flex={{ default: 'flexNone', xl: 'flex_2' }}
+            className="pf-v6-u-w-100"
+          >
             <PipelineRunsNumbersChartK8s
               namespace={activeNamespace}
               timespan={timespan}

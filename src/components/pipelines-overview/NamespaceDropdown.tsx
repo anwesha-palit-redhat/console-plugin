@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import type { FC, Ref } from 'react';
+import type { FC } from 'react';
 import { useState, useCallback, useMemo } from 'react';
 import {
   Dropdown,

@@ -21,7 +21,8 @@ import { ALL_NAMESPACES_KEY } from '../../consts';
 import { getDropDownDate } from './dateTime';
 import { LoadingInline } from '../Loading';
 import { DataType, FLAGS } from '../../types';
-import { t_chart_color_blue_300 as blueColor } from '@patternfly/react-tokens/dist/js/t_chart_color_blue_300';
+
+import './PipelinesOverview.scss';
 
 interface PipelinesRunsDurationProps {
   namespace: string;
@@ -180,8 +181,7 @@ const PipelinesRunsTotalCard: FC<PipelinesRunsDurationProps> = ({
                 </GridItem>
                 <GridItem
                   span={3}
-                  className="pf-v6-u-text-align-end"
-                  style={{ color: blueColor.value }}
+                  className="pf-v6-u-text-align-end pipeline-overview__chart-color-blue"
                 >
                   {loaded ? plrRun : <LoadingInline />}
                 </GridItem>
@@ -197,8 +197,7 @@ const PipelinesRunsTotalCard: FC<PipelinesRunsDurationProps> = ({
                 </GridItem>
                 <GridItem
                   span={3}
-                  className="pf-v6-u-text-align-end"
-                  style={{ color: blueColor.value }}
+                  className="pf-v6-u-text-align-end pipeline-overview__chart-color-blue"
                 >
                   {loaded ? repoRun : <LoadingInline />}
                 </GridItem>
@@ -212,8 +211,7 @@ const PipelinesRunsTotalCard: FC<PipelinesRunsDurationProps> = ({
                 </GridItem>
                 <GridItem
                   span={3}
-                  className="pf-v6-u-text-align-end"
-                  style={{ color: blueColor.value }}
+                  className="pf-v6-u-text-align-end pipeline-overview__chart-color-blue"
                 >
                   {loaded ? totalRun : <LoadingInline />}
                 </GridItem>
