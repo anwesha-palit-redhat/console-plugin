@@ -11,10 +11,7 @@ import { useNavigate } from 'react-router-dom-v5-compat';
 import { PipelineRunModel } from '../models';
 import { PipelineRunKind } from '../types';
 import { returnValidPipelineRunModel } from '../components/utils/pipeline-utils';
-import {
-  getPipelineRunData,
-  resourcePathFromModel,
-} from '../components/utils/utils';
+import { getPipelineRunData } from '../components/utils/utils';
 import {
   shouldHidePipelineRunCancel,
   shouldHidePipelineRunStop,
@@ -102,13 +99,13 @@ export const usePipelineRunActionsProvider = (resource: PipelineRunKind) => {
               data: getPipelineRunData(null, currentUser, resource),
             })
               .then((plr) => {
-                navigate(
+                /* navigate(
                   resourcePathFromModel(
                     PipelineRunModel,
                     plr.metadata.name,
                     plr.metadata.namespace,
                   ),
-                );
+                ); */
               })
               .catch((err) => {
                 launchErrorModal({ error: err.message });

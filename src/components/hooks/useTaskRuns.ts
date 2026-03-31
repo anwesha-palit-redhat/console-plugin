@@ -250,8 +250,6 @@ export const useRuns = <Kind extends K8sResourceKind>(
   const isList = !optionsMemo?.name;
   const limit = optionsMemo?.limit;
 
-  const isPipelineRun = groupVersionKind?.kind === PIPELINE_RUN_GVK.kind;
-
   // Hub cluster detection
   const { isResourceManagedByKueue } = useMultiClusterProxyService({
     managedBy: pipelineRunManagedBy,
@@ -375,67 +373,52 @@ export const useRuns = <Kind extends K8sResourceKind>(
   const trNamespace = isTektonResultEnabled && queryTr ? namespace : null;
 
   const [trResources, trLoaded, trError] = useTRRuns<Kind>(
-    isPipelineRun ? trNamespace : null,
+    trNamespace,
     groupVersionKind,
-    isPipelineRun ? trOptions : null,
+    trOptions,
     isTektonResultEnabled,
     optionsMemo?.skipFetch,
   );
 
-  return useMemo(() => {
-    // dedupe PLR by name since UIDs differ between hub and spoke clusters; for other cases(TR) dedupe by UID
+  const rResources: Kind[] =
+    runs && trResources
+      ? !isTaskRunQuery
+        ? uniqBy([...runs, ...trResources], (r) => r.metadata.name)
+        : uniqBy([...runs, ...trResources], (r) => r.metadata.uid)
+      : runs || trResources;
 
-    const rResources: Kind[] =
-      runs && trResources
-        ? !isTaskRunQuery
-          ? uniqBy([...runs, ...trResources], (r) => r.metadata.name)
-          : uniqBy([...runs, ...trResources], (r) => r.metadata.uid)
-        : runs || trResources;
+  /* Refactoring the nesting as it is causing cognitive damage */
+  let resolvedError: Error | undefined = undefined;
 
-    /* Refactoring the nesting as it is causing cognitive damage */
-    let resolvedError: Error | undefined = undefined;
-
-    if (namespace) {
-      if (queryTr) {
-        if (isList) {
-          resolvedError = trError && effectiveError;
-        } else {
-          // when searching by name, return an error if we have no result
-          if (trError && trLoaded && !trResources?.length) {
-            resolvedError = effectiveError;
-          }
-        }
+  if (namespace) {
+    if (queryTr) {
+      if (isList) {
+        resolvedError = trError && effectiveError;
       } else {
-        resolvedError = effectiveError;
+        // when searching by name, return an error if we have no result
+        if (trError && trLoaded && !trResources?.length) {
+          resolvedError = effectiveError;
+        }
       }
-    } else if (effectiveError) {
+    } else {
       resolvedError = effectiveError;
     }
+  } else if (effectiveError) {
+    resolvedError = effectiveError;
+  }
 
-    const pendingAdmission = shouldUseMultiCluster ? mcPendingAdmission : false;
-    const proxyUnavailable = shouldUseMultiCluster ? mcProxyUnavailable : false;
+  const pendingAdmission = shouldUseMultiCluster ? mcPendingAdmission : false;
+  const proxyUnavailable = shouldUseMultiCluster ? mcProxyUnavailable : false;
 
-    const isTrLoaded = trLoaded || !!trError;
-    return [
-      rResources,
-      effectiveLoaded,
-      isTrLoaded,
-      resolvedError,
-      pendingAdmission,
-      proxyUnavailable,
-    ];
-  }, [
-    runs,
-    trResources,
-    loaded,
-    trLoaded,
-    isTektonResultEnabled,
-    namespace,
-    queryTr,
-    isList,
-    trError,
-    error,
-  ]);
+  const isTrLoaded = trLoaded || !!trError;
+  return [
+    rResources,
+    effectiveLoaded,
+    isTrLoaded,
+    resolvedError,
+    pendingAdmission,
+    proxyUnavailable,
+  ];
 };
 
 export const useTaskRun = (

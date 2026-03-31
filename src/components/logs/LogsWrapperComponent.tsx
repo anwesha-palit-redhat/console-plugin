@@ -19,7 +19,10 @@ import { MultiStreamLogs } from './MultiStreamLogs';
 import { TektonTaskRunLog } from './TektonTaskRunLog';
 import { useFullscreen } from './fullscreen';
 import { LoadingInline } from '../Loading';
-import { TektonResourceLabel } from '../../consts';
+import {
+  TektonResourceLabel,
+  RESOURCE_LOADED_FROM_RESULTS_ANNOTATION,
+} from '../../consts';
 import { getMultiClusterPods } from '../utils/multi-cluster-api';
 import { usePoll } from '../pipelines-metrics/poll-hook';
 
@@ -57,6 +60,11 @@ const LogsWrapperComponent: FC<
   const [mcPod, setMcPod] = useState<PodKind | null>(null);
   const [mcLoaded, setMcLoaded] = useState(false);
   const [mcError, setMcError] = useState<unknown>(null);
+
+  const isArchivedTaskRun =
+    taskRun?.metadata?.annotations?.[
+      RESOURCE_LOADED_FROM_RESULTS_ANNOTATION
+    ] === 'true';
 
   /* Fetch Pod from multi-cluster API for hub clusters */
   const fetchMcPod = useCallback(async () => {
@@ -198,7 +206,12 @@ const LogsWrapperComponent: FC<
         )}
       </div>
       <div className="pf-v6-u-flex-1">
-        {!effectiveError ? (
+        {isArchivedTaskRun || effectiveError ? (
+          <TektonTaskRunLog
+            taskRun={taskRun}
+            setCurrentLogsGetter={setLogGetter}
+          />
+        ) : (
           <MultiStreamLogs
             {...props}
             taskName={taskName}
@@ -208,11 +221,6 @@ const LogsWrapperComponent: FC<
             isResourceManagedByKueue={isResourceManagedByKueue}
             pipelineRunName={pipelineRunName}
             pipelineRunFinished={pipelineRunFinished}
-          />
-        ) : (
-          <TektonTaskRunLog
-            taskRun={taskRun}
-            setCurrentLogsGetter={setLogGetter}
           />
         )}
       </div>

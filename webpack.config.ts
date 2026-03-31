@@ -153,7 +153,7 @@ const config: Configuration = {
     // PatchEntryCallbackPlugin in @openshift/dynamic-plugin-sdk-webpack validates entry chunks
     // but doesn't skip hot-update assets, causing false-positive errors during HMR.
     // afterEmit runs after the error is pushed (processAssets) but before done reports it.
-    /* {
+    {
       apply: (compiler: import('webpack').Compiler) => {
         compiler.hooks.afterEmit.tap(
           'SuppressHotUpdateEntryError',
@@ -170,7 +170,7 @@ const config: Configuration = {
           },
         );
       },
-    }, */
+    },
     // new NodePolyfillPlugin(),
   ],
   devtool: 'source-map',

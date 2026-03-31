@@ -1,4 +1,10 @@
-import type { ReactNode, ReactElement, PropsWithChildren, FC, Ref } from 'react';
+import type {
+  ReactNode,
+  ReactElement,
+  PropsWithChildren,
+  FC,
+  Ref,
+} from 'react';
 import { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -43,10 +49,7 @@ type DetailsPageProps = {
   description?: ReactNode;
   breadcrumbs?: ({ name: string; path: string } | ReactElement)[];
   actions?: Action[];
-  customActionMenu?: (
-    kindObj: K8sModel,
-    obj: K8sResourceKind,
-  ) => ReactNode;
+  customActionMenu?: (kindObj: K8sModel, obj: K8sResourceKind) => ReactNode;
   baseURL?: string;
   onTabSelect?: (selectedTabKey: string) => void;
   model?: K8sModel;
@@ -102,7 +105,7 @@ const DetailsPage: FC<PropsWithChildren<DetailsPageProps>> = ({
     // Render default action menu as fallback
     if (dropdownItems && dropdownItems.length > 0) {
       return (
-        (<Dropdown
+        <Dropdown
           onSelect={setClosed}
           onOpenChange={(isOpen: boolean) => setIsOpen(isOpen)}
           toggle={(toggleRef: Ref<MenuToggleElement>) => (
@@ -120,7 +123,7 @@ const DetailsPage: FC<PropsWithChildren<DetailsPageProps>> = ({
           popperProps={{ position: 'right' }}
         >
           <DropdownList>{dropdownItems}</DropdownList>
-        </Dropdown>)
+        </Dropdown>
       );
     }
     return null;
