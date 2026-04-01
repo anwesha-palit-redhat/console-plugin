@@ -38,7 +38,6 @@ interface PipelinesAverageDurationProps {
   parentName?: string;
   kind?: string;
   namespace?: string;
-  width?: number;
 }
 type DomainType = { x?: DomainTuple; y?: DomainTuple };
 
@@ -76,7 +75,6 @@ const PipelinesAverageDuration: FC<PipelinesAverageDurationProps> = ({
   parentName,
   namespace,
   kind,
-  width = 530
 }) => {
   const { t } = useTranslation('plugin__pipelines-console-plugin');
   const isDevConsoleProxyAvailable = useFlag(FLAGS.DEVCONSOLE_PROXY);
@@ -85,6 +83,16 @@ const PipelinesAverageDuration: FC<PipelinesAverageDurationProps> = ({
   const [pipelineAverageDurationError, setPipelineAverageDurationError] =
     useState<string | undefined>();
   const abortControllerRef = useRef<AbortController>();
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  const [chartWidth, setChartWidth] = useState(0);
+
+  useEffect(() => {
+    // This runs exactly once when the component first mounts
+    if (chartContainerRef.current) {
+      setChartWidth(chartContainerRef.current.clientWidth);
+    }
+  }, []);
+
   const startTimespan = timespan - parsePrometheusDuration('1d');
   const endDate = new Date(Date.now()).setHours(0, 0, 0, 0);
   const startDate = new Date(Date.now() - startTimespan).setHours(0, 0, 0, 0);
@@ -212,29 +220,40 @@ const PipelinesAverageDuration: FC<PipelinesAverageDurationProps> = ({
     domainValue.y = [minY, maxY];
   }
 
-  let xAxisStyle: ChartAxisProps['style'] = {
-    tickLabels: {
-      fill: 'var(--pf-t--global--text--color--regular)',
-      fontSize: 12,
-    },
-  };
+  const widthPerTick = chartWidth / tickValues.length;
+
+  let xAxisStyle: ChartAxisProps['style'];
+  let bottomPad: number;
+  if (tickValues.length > 7 || widthPerTick < 45) {
+    const dense = widthPerTick < 15;
+    xAxisStyle = {
+      tickLabels: {
+        fill: 'var(--pf-t--global--text--color--regular)',
+        angle: dense ? 300 : widthPerTick < 30 ? 310 : 320,
+        fontSize: dense ? 7 : 10,
+        textAnchor: 'end',
+        verticalAnchor: 'end',
+      },
+    };
+    bottomPad = 55;
+  } else {
+    xAxisStyle = {
+      tickLabels: {
+        fill: 'var(--pf-t--global--text--color--regular)',
+        fontSize: 12,
+      },
+    };
+    bottomPad = 35;
+  }
+  if (showLabel) bottomPad += 15;
+  const chartHeight = 10 + Math.max(50, Math.min(100, Math.round(chartWidth / 5))) + bottomPad;
+
   const yAxisStyle: ChartAxisProps['style'] = {
     tickLabels: {
       fill: 'var(--pf-t--global--text--color--regular)',
       fontSize: 12,
     },
   };
-  if (tickValues.length > 7) {
-    xAxisStyle = {
-      tickLabels: {
-        fill: 'var(--pf-t--global--text--color--regular)',
-        angle: 320,
-        fontSize: 10,
-        textAnchor: 'end',
-        verticalAnchor: 'end',
-      },
-    };
-  }
 
   return (
     <>
@@ -261,7 +280,10 @@ const PipelinesAverageDuration: FC<PipelinesAverageDurationProps> = ({
               className="pf-v6-u-mb-md pf-v6-u-ml-lg pf-v6-u-mt-lg"
             />
           ) : (
-            <div className="pf-v6-u-flex-shrink-0">
+            <div
+              ref={chartContainerRef}
+              className={`pf-v6-u-w-100 ${chartWidth > 0 ? 'pf-v6-u-h-100' : ''}`}
+            >
               {loaded ? (
                 <Chart
                   containerComponent={
@@ -273,11 +295,11 @@ const PipelinesAverageDuration: FC<PipelinesAverageDurationProps> = ({
                   scale={{ x: 'time', y: 'linear' }}
                   domain={domainValue}
                   domainPadding={{ x: [30, 25] }}
-                  height={145}
-                  width={width}
+                  height={chartHeight}
+                  width={chartWidth}
                   padding={{
                     top: 10,
-                    bottom: 55,
+                    bottom: bottomPad,
                     left: 50,
                     right: 50,
                   }}
@@ -299,7 +321,7 @@ const PipelinesAverageDuration: FC<PipelinesAverageDurationProps> = ({
                   </ChartGroup>
                 </Chart>
               ) : (
-                <div className="pipeline-overview__number-of-plr-card__loading pf-v6-u-h-100">
+                <div className="pf-v6-u-display-flex pf-v6-u-align-items-center pf-v6-u-justify-content-center pf-v6-u-h-100">
                   <LoadingInline />
                 </div>
               )}
