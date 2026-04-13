@@ -482,10 +482,7 @@ const PipelinesRunsStatusCard: FC<PipelinesRunsStatusCardProps> = ({
                       width={350}
                     />
                   ) : (
-                    <div
-                      className="pf-v6-u-display-flex pf-v6-u-align-items-center pf-v6-u-justify-content-center"
-                      style={{ height: 200, width: 350 }}
-                    >
+                    <div className="pf-v6-u-display-flex pf-v6-u-align-items-center pf-v6-u-justify-content-center pf-v6-u-h-100 pf-v6-u-w-100">
                       <LoadingInline />
                     </div>
                   )}
@@ -497,8 +494,9 @@ const PipelinesRunsStatusCard: FC<PipelinesRunsStatusCardProps> = ({
                     'pf-v6-u-display-flex pf-v6-u-h-100 pf-v6-u-w-100 pipeline-overview__chart-area',
                     {
                       'pf-v6-u-align-items-flex-end': loaded,
-                      'pf-v6-u-align-items-center pf-v6-u-justify-content-center': !loaded,
-                    }
+                      'pf-v6-u-align-items-center pf-v6-u-justify-content-center':
+                        !loaded,
+                    },
                   )}
                 >
                   {loaded ? (

@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import _ from 'lodash';
 import classNames from 'classnames';
 import { useTranslation } from 'react-i18next';
@@ -83,13 +83,10 @@ const PipelinesAverageDuration: FC<PipelinesAverageDurationProps> = ({
   const [pipelineAverageDurationError, setPipelineAverageDurationError] =
     useState<string | undefined>();
   const abortControllerRef = useRef<AbortController>();
-  const chartContainerRef = useRef<HTMLDivElement>(null);
   const [chartWidth, setChartWidth] = useState(0);
-
-  useEffect(() => {
-    // This runs exactly once when the component first mounts
-    if (chartContainerRef.current) {
-      setChartWidth(chartContainerRef.current.clientWidth);
+  const chartContainerRef = useCallback((node: HTMLDivElement | null) => {
+    if (node) {
+      setChartWidth(node.clientWidth);
     }
   }, []);
 
@@ -246,7 +243,8 @@ const PipelinesAverageDuration: FC<PipelinesAverageDurationProps> = ({
     bottomPad = 35;
   }
   if (showLabel) bottomPad += 15;
-  const chartHeight = 10 + Math.max(50, Math.min(100, Math.round(chartWidth / 5))) + bottomPad;
+  const chartHeight =
+    10 + Math.max(50, Math.min(100, Math.round(chartWidth / 5))) + bottomPad;
 
   const yAxisStyle: ChartAxisProps['style'] = {
     tickLabels: {
@@ -257,21 +255,26 @@ const PipelinesAverageDuration: FC<PipelinesAverageDurationProps> = ({
 
   return (
     <>
-     <Card
-        className={classNames('pipeline-overview__min-width-full pipeline-overview__overflow-hidden pf-v6-u-display-flex pf-v6-u-flex-direction-column', {
-          'pipeline-overview__number-of-plr-card': !pipelineAverageDurationError,
-          'card-border': bordered,
-          'pf-v6-u-h-100': !pipelineAverageDurationError,
-        })}
+      <Card
+        className={classNames(
+          'pipeline-overview__min-width-full pipeline-overview__overflow-hidden pf-v6-u-display-flex pf-v6-u-flex-direction-column',
+          {
+            'pipeline-overview__number-of-plr-card':
+              !pipelineAverageDurationError,
+            'card-border': bordered,
+            'pf-v6-u-h-100': !pipelineAverageDurationError,
+          },
+        )}
       >
         <CardTitle className="pipeline-overview__number-of-plr-card__title">
           <span>{t('Average duration')}</span>
         </CardTitle>
-         <CardBody
-            className={classNames({
-              'pf-v6-u-flex-1 pipeline-overview__min-height-0 pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-justify-content-flex-end pf-v6-u-align-items-flex-start pf-v6-u-p-0': !pipelineAverageDurationError,
-            })}
-          >
+        <CardBody
+          className={classNames({
+            'pf-v6-u-flex-1 pipeline-overview__min-height-0 pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-justify-content-flex-end pf-v6-u-align-items-flex-start pf-v6-u-p-0':
+              !pipelineAverageDurationError,
+          })}
+        >
           {pipelineAverageDurationError ? (
             <Alert
               variant="danger"
@@ -282,7 +285,9 @@ const PipelinesAverageDuration: FC<PipelinesAverageDurationProps> = ({
           ) : (
             <div
               ref={chartContainerRef}
-              className={`pf-v6-u-w-100 ${chartWidth > 0 ? 'pf-v6-u-h-100' : ''}`}
+              className={`pf-v6-u-w-100 ${
+                chartWidth > 0 ? 'pf-v6-u-h-100' : ''
+              }`}
             >
               {loaded ? (
                 <Chart

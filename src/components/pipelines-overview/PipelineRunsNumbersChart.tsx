@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import * as _ from 'lodash';
 import classNames from 'classnames';
 import { useTranslation } from 'react-i18next';
@@ -28,7 +28,6 @@ import { DataType, FLAGS, SummaryResponse } from '../../types';
 import { ALL_NAMESPACES_KEY } from '../../consts';
 import { getFilter, useInterval } from './utils';
 import { LoadingInline } from '../Loading';
-
 
 interface PipelinesRunsNumbersChartProps {
   namespace?: string;
@@ -93,14 +92,12 @@ const PipelinesRunsNumbersChart: FC<PipelinesRunsNumbersChartProps> = ({
     string | undefined
   >();
   const abortControllerRef = useRef<AbortController>();
-  const chartContainerRef = useRef<HTMLDivElement>(null);
   const [chartWidth, setChartWidth] = useState(0);
-
-  useEffect(() => {
-    if (chartContainerRef.current) {
-      setChartWidth(chartContainerRef.current.clientWidth);
+  const chartContainerRef = useCallback((node: HTMLDivElement | null) => {
+    if (node) {
+      setChartWidth(node.clientWidth);
     }
-  }, []); 
+  }, []);
 
   if (namespace == ALL_NAMESPACES_KEY) {
     namespace = '-';
@@ -241,7 +238,8 @@ const PipelinesRunsNumbersChart: FC<PipelinesRunsNumbersChartProps> = ({
     bottomPad = 35;
   }
   if (showLabel) bottomPad += 15;
-  const chartHeight = 10 + Math.max(50, Math.min(100, Math.round(chartWidth / 5))) + bottomPad;
+  const chartHeight =
+    10 + Math.max(50, Math.min(100, Math.round(chartWidth / 5))) + bottomPad;
 
   const yAxisStyle: ChartAxisProps['style'] = {
     tickLabels: {
@@ -253,18 +251,22 @@ const PipelinesRunsNumbersChart: FC<PipelinesRunsNumbersChartProps> = ({
   return (
     <>
       <Card
-        className={classNames('pipeline-overview__min-width-full pipeline-overview__overflow-hidden pf-v6-u-display-flex pf-v6-u-flex-direction-column', {
-          'pipeline-overview__number-of-plr-card': !pipelineRunsChartError,
-          'card-border': bordered,
-          'pf-v6-u-h-100': !pipelineRunsChartError,
-        })}
+        className={classNames(
+          'pipeline-overview__min-width-full pipeline-overview__overflow-hidden pf-v6-u-display-flex pf-v6-u-flex-direction-column',
+          {
+            'pipeline-overview__number-of-plr-card': !pipelineRunsChartError,
+            'card-border': bordered,
+            'pf-v6-u-h-100': !pipelineRunsChartError,
+          },
+        )}
       >
         <CardTitle className="pf-v6-u-pb-0">
           <span>{t('Number of PipelineRuns')}</span>
         </CardTitle>
         <CardBody
           className={classNames({
-            'pf-v6-u-flex-1 pipeline-overview__min-height-0 pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-justify-content-flex-end pf-v6-u-align-items-flex-start pf-v6-u-p-0': !pipelineRunsChartError,
+            'pf-v6-u-flex-1 pipeline-overview__min-height-0 pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-justify-content-flex-end pf-v6-u-align-items-flex-start pf-v6-u-p-0':
+              !pipelineRunsChartError,
           })}
         >
           {pipelineRunsChartError ? (
@@ -277,7 +279,9 @@ const PipelinesRunsNumbersChart: FC<PipelinesRunsNumbersChartProps> = ({
           ) : (
             <div
               ref={chartContainerRef}
-              className={`pf-v6-u-w-100 ${chartWidth > 0 ? 'pf-v6-u-h-100' : ''}`}
+              className={`pf-v6-u-w-100 ${
+                chartWidth > 0 ? 'pf-v6-u-h-100' : ''
+              }`}
             >
               {loaded ? (
                 <Chart
@@ -312,7 +316,7 @@ const PipelinesRunsNumbersChart: FC<PipelinesRunsNumbersChartProps> = ({
                   </ChartGroup>
                 </Chart>
               ) : (
-                <div className="pf-v6-u-display-flex pf-v6-u-align-items-center pf-v6-u-justify-content-center pf-v6-u-h-100">
+                <div className="pf-v6-u-display-flex pf-v6-u-align-items-center pf-v6-u-justify-content-center pf-v6-u-h-100 pf-v6-u-p-md pf-v6-u-p-0-on-md">
                   <LoadingInline />
                 </div>
               )}
