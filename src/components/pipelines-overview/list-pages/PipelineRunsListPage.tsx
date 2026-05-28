@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import { useState, useRef, useEffect } from 'react';
 import classNames from 'classnames';
+import { useSearchParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import {
   Alert,
@@ -36,6 +37,7 @@ const PipelineRunsListPage: FC<PipelineRunsListPageProps> = ({
 }) => {
   const { t } = useTranslation('plugin__pipelines-console-plugin');
   const isDevConsoleProxyAvailable = useFlag(FLAGS.DEVCONSOLE_PROXY);
+  const [, setSearchParams] = useSearchParams();
 
   const [pageFlag, setPageFlag] = useState(1);
   const [loaded, setloaded] = useState(false);
@@ -163,6 +165,11 @@ const PipelineRunsListPage: FC<PipelineRunsListPageProps> = ({
         .includes(value.toLowerCase()),
     );
     setSummaryDataFiltered(filteredData);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set('page', '1');
+      return next;
+    });
   };
   return (
     <Card
