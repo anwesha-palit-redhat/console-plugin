@@ -262,38 +262,36 @@ function isVersionSatisfied(installed: string, required: string): boolean {
 
 /**
  * Find the fix version that matches the same major as the installed version.
- * If no exact major match, falls forward to the nearest higher fix version
- * (e.g., installed 3.x with fixes [2.5.6, 4.0.6] → returns 4.0.6).
+ * Returns undefined if no same-major fix exists — never crosses major boundaries
+ * because forcing e.g. 1.x → 2.x can break semver contracts of consuming packages.
  */
 function getFixForVersion(
   installed: string,
   fixedVersions: string[],
 ): string | undefined {
   const major = semver.major(installed);
-  const exactMatch = fixedVersions.find((fv) => semver.major(fv) === major);
-  if (exactMatch) return exactMatch;
-  const higher = fixedVersions
-    .filter((fv) => semver.major(fv) > major)
-    .sort((a, b) => semver.compare(a, b));
-  return higher[0];
+  return fixedVersions.find((fv) => semver.major(fv) === major);
 }
 
 /**
  * Check if an installed version is satisfied by any of the fixed versions
- * (matched by major). Returns true if the installed version >= the fix for its major.
+ * (matched by major). If no same-major fix was provided, this major is assumed
+ * unaffected (returns true). This avoids forcing cross-major resolutions.
  */
 function isVersionSatisfiedMulti(
   installed: string,
   fixedVersions: string[],
 ): boolean {
   const fix = getFixForVersion(installed, fixedVersions);
-  if (!fix) return false;
+  if (!fix) return true;
   return isVersionSatisfied(installed, fix);
 }
 
 /**
  * Build per-major-version resolution entries for all vulnerable installed versions.
- * e.g. {"pkg@^2.0.0": "2.5.6", "pkg@^4.0.0": "4.0.6"}
+ * Always uses scoped keys (e.g. "pkg@^2.0.0": "2.5.6") to avoid forcing a
+ * single version across incompatible major ranges. Skips majors that have no
+ * same-major fix — those need triage, not a cross-major override.
  */
 function buildResolutionEntries(
   pkg: string,
@@ -308,8 +306,7 @@ function buildResolutionEntries(
     seenMajors.add(major);
     const fix = getFixForVersion(v, fixedVersions);
     if (fix && !isVersionSatisfied(v, fix)) {
-      const key = fixedVersions.length > 1 ? `${pkg}@^${major}.0.0` : pkg;
-      entries[key] = fix;
+      entries[`${pkg}@^${major}.0.0`] = fix;
     }
   }
   return entries;
