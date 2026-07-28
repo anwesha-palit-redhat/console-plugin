@@ -262,38 +262,39 @@ function isVersionSatisfied(installed: string, required: string): boolean {
 
 /**
  * Find the fix version that matches the same major as the installed version.
- * If no exact major match, falls forward to the nearest higher fix version
- * (e.g., installed 3.x with fixes [2.5.6, 4.0.6] → returns 4.0.6).
+ * Returns undefined if no same-major fix exists — never crosses major boundaries
+ * because forcing e.g. 1.x → 2.x can break semver contracts of consuming packages.
  */
 function getFixForVersion(
   installed: string,
   fixedVersions: string[],
 ): string | undefined {
   const major = semver.major(installed);
-  const exactMatch = fixedVersions.find((fv) => semver.major(fv) === major);
-  if (exactMatch) return exactMatch;
-  const higher = fixedVersions
-    .filter((fv) => semver.major(fv) > major)
-    .sort((a, b) => semver.compare(a, b));
-  return higher[0];
+  return fixedVersions.find((fv) => semver.major(fv) === major);
 }
 
 /**
  * Check if an installed version is satisfied by any of the fixed versions
- * (matched by major). Returns true if the installed version >= the fix for its major.
+ * (matched by major). If no same-major fix exists, the installed version is
+ * considered vulnerable (returns false) — the CVE spans across majors.
  */
 function isVersionSatisfiedMulti(
   installed: string,
   fixedVersions: string[],
 ): boolean {
   const fix = getFixForVersion(installed, fixedVersions);
-  if (!fix) return false;
+  if (!fix) {
+    const sorted = [...fixedVersions].sort(semver.compare);
+    return semver.gte(installed, sorted[sorted.length - 1]);
+  }
   return isVersionSatisfied(installed, fix);
 }
 
 /**
  * Build per-major-version resolution entries for all vulnerable installed versions.
- * e.g. {"pkg@^2.0.0": "2.5.6", "pkg@^4.0.0": "4.0.6"}
+ * Uses scoped keys (e.g. "pkg@^2.0.0": "2.5.6") when a same-major fix exists.
+ * Falls back to the lowest available fix for cross-major cases — the user
+ * explicitly requested this version so the intent is clear.
  */
 function buildResolutionEntries(
   pkg: string,
@@ -302,14 +303,15 @@ function buildResolutionEntries(
 ): Record<string, string> {
   const entries: Record<string, string> = {};
   const seenMajors = new Set<number>();
+  const sortedFixes = [...fixedVersions].sort(semver.compare);
   for (const v of installedVersions) {
     const major = semver.major(v);
     if (seenMajors.has(major)) continue;
     seenMajors.add(major);
     const fix = getFixForVersion(v, fixedVersions);
-    if (fix && !isVersionSatisfied(v, fix)) {
-      const key = fixedVersions.length > 1 ? `${pkg}@^${major}.0.0` : pkg;
-      entries[key] = fix;
+    const target = fix ?? sortedFixes[0];
+    if (!isVersionSatisfied(v, target)) {
+      entries[`${pkg}@^${major}.0.0`] = target;
     }
   }
   return entries;
