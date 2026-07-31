@@ -192,6 +192,8 @@
     "immutable@^3.0.0": "3.8.3",
     "immutable@^5.0.0": "5.1.5",
     "protobufjs": "^7.5.5",
-    "shell-quote": "^1.8.4"
+    "shell-quote": "^1.8.4",
+    "js-yaml@^4.0.0": "4.3.0",
+    "js-yaml@4.1.0": "4.3.0"
   }
 }
