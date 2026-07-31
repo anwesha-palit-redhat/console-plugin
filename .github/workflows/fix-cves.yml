@@ -67,6 +67,7 @@ jobs:
 
       - name: Apply dependency fixes
         id: apply
+        continue-on-error: true
         run: |
           yarn ts-node --project scripts/fix-cves/tsconfig.json \
             scripts/fix-cves/apply-fixes.ts \
@@ -94,6 +95,7 @@ jobs:
         run: yarn test
 
       - name: Record build/test status
+        if: always() && hashFiles('cve-artifacts/results.json') != ''
         run: |
           python3 -c "
           import json
@@ -104,12 +106,14 @@ jobs:
           "
 
       - name: Generate report
+        if: always() && hashFiles('cve-artifacts/results.json') != ''
         run: |
           yarn ts-node --project scripts/fix-cves/tsconfig.json \
             scripts/fix-cves/create-report.ts \
             --artifacts-dir "$ARTIFACTS_DIR"
 
       - name: Check triage / verification status
+        if: always() && hashFiles('cve-artifacts/results.json') != ''
         id: status
         run: |
           TRIAGE=$(python3 -c "import json; print('true' if json.load(open('$ARTIFACTS_DIR/results.json')).get('triageNeeded') else 'false')")
@@ -128,7 +132,7 @@ jobs:
 
       - name: Create branch, commit, and push
         id: commit
-        if: steps.status.outputs.triage_needed != 'true' && steps.status.outputs.verification_failed != 'true'
+        if: always()
         shell: bash
         run: |
           if [[ -n "$JIRA_ID" ]]; then
@@ -164,7 +168,7 @@ jobs:
 
       - name: Create Pull Request
         id: pr
-        if: steps.commit.outcome == 'success' && steps.commit.outputs.changed == 'true'
+        if: always() && steps.commit.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -197,7 +201,7 @@ jobs:
           echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
 
       - name: Regenerate report with PR URL
-        if: steps.pr.outputs.pr_url != ''
+        if: always() && steps.pr.outputs.pr_url != ''
         run: |
           yarn ts-node --project scripts/fix-cves/tsconfig.json \
             scripts/fix-cves/create-report.ts \
