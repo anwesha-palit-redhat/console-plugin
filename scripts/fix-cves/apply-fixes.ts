@@ -83,7 +83,9 @@ function applyStrategy(analysis: AnalysisResult): string {
     case 'resolution': {
       const entries = analysis.resolutionEntries;
       if (Object.keys(entries).length === 0) {
-        return 'No resolution entries needed — affected majors already satisfied';
+        throw new Error(
+          'Resolution strategy selected but no entries generated — needs manual triage',
+        );
       }
       return applyResolutions(entries);
     }

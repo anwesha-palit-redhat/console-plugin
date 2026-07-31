@@ -275,8 +275,8 @@ function getFixForVersion(
 
 /**
  * Check if an installed version is satisfied by any of the fixed versions
- * (matched by major). If no same-major fix exists, the installed version is
- * considered vulnerable (returns false) — the CVE spans across majors.
+ * (matched by major). If no same-major fix exists, compare against the
+ * lowest fix — anything below it is vulnerable.
  */
 function isVersionSatisfiedMulti(
   installed: string,
@@ -285,16 +285,16 @@ function isVersionSatisfiedMulti(
   const fix = getFixForVersion(installed, fixedVersions);
   if (!fix) {
     const sorted = [...fixedVersions].sort(semver.compare);
-    return semver.gte(installed, sorted[sorted.length - 1]);
+    return semver.gte(installed, sorted[0]);
   }
   return isVersionSatisfied(installed, fix);
 }
 
 /**
- * Build per-major-version resolution entries for all vulnerable installed versions.
- * Uses scoped keys (e.g. "pkg@^2.0.0": "2.5.6") when a same-major fix exists.
- * Falls back to the lowest available fix for cross-major cases — the user
- * explicitly requested this version so the intent is clear.
+ * Build resolution entries for all vulnerable installed versions.
+ * Same-major: scoped key "pkg@^X.0.0" → "X.Y.Z" (Yarn respects this).
+ * Cross-major: unscoped key "pkg" → "Y.Y.Y" (scoped keys don't work
+ * when the target version is outside the range).
  */
 function buildResolutionEntries(
   pkg: string,
@@ -304,15 +304,22 @@ function buildResolutionEntries(
   const entries: Record<string, string> = {};
   const seenMajors = new Set<number>();
   const sortedFixes = [...fixedVersions].sort(semver.compare);
+  let needsCrossMajor = false;
   for (const v of installedVersions) {
     const major = semver.major(v);
     if (seenMajors.has(major)) continue;
     seenMajors.add(major);
     const fix = getFixForVersion(v, fixedVersions);
-    const target = fix ?? sortedFixes[0];
-    if (!isVersionSatisfied(v, target)) {
-      entries[`${pkg}@^${major}.0.0`] = target;
+    if (fix) {
+      if (!isVersionSatisfied(v, fix)) {
+        entries[`${pkg}@^${major}.0.0`] = fix;
+      }
+    } else if (!semver.gte(v, sortedFixes[0])) {
+      needsCrossMajor = true;
     }
+  }
+  if (needsCrossMajor) {
+    entries[pkg] = sortedFixes[0];
   }
   return entries;
 }
