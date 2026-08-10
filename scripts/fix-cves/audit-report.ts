@@ -86,7 +86,7 @@ function renderEvidence(pkg: PackageFixResult): string {
       blocks.push('');
     }
     if (pkg.yarnWhyRaw?.trim()) {
-      blocks.push('**Before — `yarn why`**');
+      blocks.push('**Before — `yarn why --no-color`**');
       blocks.push('');
       blocks.push('```');
       blocks.push(pkg.yarnWhyRaw.trim());
@@ -105,7 +105,7 @@ function renderEvidence(pkg: PackageFixResult): string {
       blocks.push('');
     }
     if (pkg.verifyYarnWhy?.trim()) {
-      blocks.push('**After — `yarn why`**');
+      blocks.push('**After — `yarn why --no-color`**');
       blocks.push('');
       blocks.push('```');
       blocks.push(pkg.verifyYarnWhy.trim());

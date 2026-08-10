@@ -45,8 +45,8 @@ import { ensureDir, getArg, writeFile } from './utils';
 type ResolutionStatus = 'ok' | 'stale' | 'orphaned' | 'redundant';
 
 interface ResolutionCheckResult {
-  descriptor: string;   // e.g. "semver@^6.0.0"
-  package: string;      // e.g. "semver"
+  descriptor: string; // e.g. "semver@^6.0.0"
+  package: string; // e.g. "semver"
   pinnedVersion: string;
   installedVersion: string | null;
   latestSameMajor: string | null;
@@ -120,7 +120,13 @@ function toConcreteVersion(v: string): string | null {
 }
 
 function getLatestSameMajor(pkg: string, pinnedVersion: string): string | null {
-  const out = runCmd('npm', ['view', pkg, 'versions', '--json', '--prefer-online']);
+  const out = runCmd('npm', [
+    'view',
+    pkg,
+    'versions',
+    '--json',
+    '--prefer-online',
+  ]);
   try {
     const versions: string[] = JSON.parse(out);
     const major = semver.major(pinnedVersion);
@@ -168,13 +174,13 @@ function main(): void {
   const resolutions: Record<string, string> = pj.resolutions ?? {};
 
   if (Object.keys(resolutions).length === 0) {
-    console.log('No resolutions block found in package.json — nothing to check.');
+    console.log(
+      'No resolutions block found in package.json — nothing to check.',
+    );
     return;
   }
 
-  console.log(
-    `Checking ${Object.keys(resolutions).length} resolution(s)…\n`,
-  );
+  console.log(`Checking ${Object.keys(resolutions).length} resolution(s)…\n`);
 
   const checkResults: ResolutionCheckResult[] = [];
   let hasIssues = false;
@@ -188,7 +194,9 @@ function main(): void {
     // version before calling semver.gte/gt which reject range strings.
     const concretePin = toConcreteVersion(pinnedVersion);
     if (!concretePin) {
-      console.warn(`⚠ Could not parse pinned version for ${descriptor}: ${pinnedVersion} — skipping`);
+      console.warn(
+        `⚠ Could not parse pinned version for ${descriptor}: ${pinnedVersion} — skipping`,
+      );
       continue;
     }
 
@@ -236,12 +244,17 @@ function main(): void {
     }
 
     const icon =
-      status === 'ok' ? '✅' :
-      status === 'stale' ? '🕒' :
-      status === 'orphaned' ? '🗑' :
-      '♻️';
+      status === 'ok'
+        ? '✅'
+        : status === 'stale'
+        ? '🕒'
+        : status === 'orphaned'
+        ? '🗑'
+        : '♻️';
 
-    console.log(`${icon} [${status.toUpperCase()}] ${descriptor} → ${pinnedVersion}`);
+    console.log(
+      `${icon} [${status.toUpperCase()}] ${descriptor} → ${pinnedVersion}`,
+    );
     console.log(`     ${detail}\n`);
 
     checkResults.push({
@@ -261,13 +274,10 @@ function main(): void {
     JSON.stringify(checkResults, null, 2) + '\n',
   );
 
-  const counts = checkResults.reduce(
-    (acc, r) => {
-      acc[r.status] = (acc[r.status] ?? 0) + 1;
-      return acc;
-    },
-    {} as Record<string, number>,
-  );
+  const counts = checkResults.reduce((acc, r) => {
+    acc[r.status] = (acc[r.status] ?? 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
 
   console.log('--- Summary ---');
   console.log(`  OK:        ${counts.ok ?? 0}`);
