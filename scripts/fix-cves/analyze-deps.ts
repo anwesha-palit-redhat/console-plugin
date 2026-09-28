@@ -31,7 +31,7 @@ interface AnalysisResult {
   reason: string;
   yarnWhyRaw: string;
   npmLsRaw: string;
-  /** Per-major-version resolution map, e.g. {"pkg@^2.0.0": "2.5.6", "pkg@^4.0.0": "4.0.6"} */
+  /** Resolution map keyed by the exact yarn.lock descriptor, e.g. {"js-yaml@4.1.0": "4.3.2"} */
   resolutionEntries: Record<string, string>;
 }
 
@@ -132,7 +132,7 @@ function isTransitiveSDKDep(chains: string[]): boolean {
 }
 
 /**
- * Get the currently installed version from node_modules or yarn.lock.
+ * Get the currently installed (hoisted) version from node_modules.
  */
 function getCurrentVersion(pkg: string): string | null {
   const nmPath = path.join(
@@ -153,50 +153,57 @@ function getCurrentVersion(pkg: string): string | null {
 }
 
 /**
- * Get ALL installed versions of a package across the entire node_modules tree.
- * Catches nested/duplicate copies that the hoisted-only check would miss.
+ * Parse yarn.lock directly for every literal descriptor of `pkg` and its
+ * resolved version.
+ *
+ * This is the source of truth for what `resolutions` entries need to be
+ * keyed by: Yarn matches resolution keys against the exact descriptor
+ * string a dependent's package.json declares (e.g. "js-yaml@4.1.0" or
+ * "js-yaml@^4.0.0"), not against a semver-evaluated range. `npm ls` can't
+ * reliably walk a Yarn-managed tree (different hoisting/dedup rules, and
+ * it can emit warnings that break `--json` output), so it both misses
+ * nested/duplicate copies and can't tell us the real descriptor text.
+ * Reading yarn.lock avoids both problems.
+ *
+ * Handles both the classic (v1) and Berry (v2+) lockfile block formats:
+ *   classic: js-yaml@^4.0.0, js-yaml@4.1.0:
+ *              version "4.1.0"
+ *   berry:   "js-yaml@npm:^4.0.0, js-yaml@npm:4.1.0":
+ *              version: 4.1.0
  */
-function getAllInstalledVersions(pkg: string): string[] {
-  const output = runCmd('npm', ['ls', '--all', pkg, '--json']);
-  const versions = new Set<string>();
-  try {
-    const tree = JSON.parse(output);
-    findVersions(tree, pkg, versions);
-  } catch (_err) {
-    // npm ls produced invalid JSON (e.g. unmet peer deps warnings) — return empty
-  }
-  return [...versions];
-}
+function getYarnLockEntries(
+  pkg: string,
+): { descriptor: string; version: string }[] {
+  const lockPath = path.join(process.cwd(), 'yarn.lock');
+  if (!fs.existsSync(lockPath)) return [];
 
-function findVersions(node: any, pkg: string, versions: Set<string>): void {
-  if (!node || typeof node !== 'object') return;
-  if (node.dependencies) {
-    for (const [name, dep] of Object.entries<any>(node.dependencies)) {
-      if (name === pkg && dep.version) versions.add(dep.version);
-      findVersions(dep, pkg, versions);
+  const lines = fs.readFileSync(lockPath, 'utf-8').split('\n');
+  const entries: { descriptor: string; version: string }[] = [];
+  let currentDescriptors: string[] = [];
+
+  for (const line of lines) {
+    // Unindented block header ending in ':' introduces a new set of
+    // descriptors that all resolve to the version line that follows.
+    if (/^\S/.test(line) && line.trimEnd().endsWith(':')) {
+      const header = line.trimEnd().slice(0, -1).replace(/^"|"$/g, '');
+      currentDescriptors = header
+        .split(', ')
+        .map((d) => d.trim().replace(/^"|"$/g, '').replace('@npm:', '@'))
+        .filter((d) => d.startsWith(`${pkg}@`));
+      continue;
+    }
+    // Version line inside a block.
+    //   classic: `  version "4.1.0"`
+    //   berry:   `  version: 4.1.0`
+    const m = line.match(/^\s+version:?\s+"?([^"\s]+)"?\s*$/);
+    if (m && currentDescriptors.length) {
+      for (const descriptor of currentDescriptors) {
+        entries.push({ descriptor, version: m[1] });
+      }
+      currentDescriptors = [];
     }
   }
-}
-
-/**
- * Fetch available versions from the npm registry.
- * Uses --prefer-online to bypass stale local cache — important in CI
- * where a cached older index could mask a newly published fix version.
- */
-function getAvailableVersions(pkg: string): string[] {
-  const output = runCmd('npm', [
-    'view',
-    pkg,
-    'versions',
-    '--json',
-    '--prefer-online',
-  ]);
-  try {
-    const parsed = JSON.parse(output);
-    return Array.isArray(parsed) ? parsed : [parsed];
-  } catch {
-    return [];
-  }
+  return entries;
 }
 
 /**
@@ -310,37 +317,24 @@ function isVersionSatisfiedMulti(
 }
 
 /**
- * Build resolution entries for all vulnerable installed versions.
- * Groups versions by major and checks ALL copies — not just the first.
- * Generates both scoped ("pkg@^X.0.0") and pinned ("pkg@X.Y.Z") entries
- * to catch both range-based and exact-pinned dependency descriptors.
- * Skips majors with no same-major fix (those become triage-needed).
+ * Build resolution entries keyed by the EXACT descriptors yarn.lock shows
+ * for this package — not a synthesized range like "pkg@^4.0.0" — so
+ * Yarn's resolution matching actually overrides every vulnerable copy in
+ * the tree, including nested/duplicate ones that only differ by descriptor.
+ *
+ * Skips descriptors whose major has no same-major fix available (those are
+ * surfaced separately as stranded majors and become triage-needed).
  */
 function buildResolutionEntries(
-  pkg: string,
-  installedVersions: string[],
+  lockEntries: { descriptor: string; version: string }[],
   fixedVersions: string[],
 ): Record<string, string> {
   const entries: Record<string, string> = {};
-  const byMajor = new Map<number, string[]>();
-  for (const v of installedVersions) {
-    const major = semver.major(v);
-    if (!byMajor.has(major)) byMajor.set(major, []);
-    const bucket = byMajor.get(major);
-    if (bucket) bucket.push(v);
-  }
-
-  for (const [major, versions] of byMajor) {
-    const fix = getFixForVersion(versions[0], fixedVersions);
-    if (!fix) continue;
-
-    const vulnerable = versions.filter((v) => !isVersionSatisfied(v, fix));
-    if (vulnerable.length === 0) continue;
-
-    entries[`${pkg}@^${major}.0.0`] = fix;
-    for (const v of vulnerable) {
-      entries[`${pkg}@${v}`] = fix;
-    }
+  for (const { descriptor, version } of lockEntries) {
+    const fix = getFixForVersion(version, fixedVersions);
+    if (!fix) continue; // stranded major — handled by getStrandedMajors
+    if (isVersionSatisfied(version, fix)) continue; // already fine
+    entries[descriptor] = fix;
   }
   return entries;
 }
@@ -373,9 +367,12 @@ function main(): void {
   const npmLsRaw = runCmd('npm', ['ls', '--all', args.package]).trimEnd();
   const currentVersion = getCurrentVersion(args.package);
 
-  // Full-tree check: verify ALL installed copies satisfy the fix, not just the
-  // hoisted one. Falls back to the hoisted version if npm ls returns nothing.
-  let installedVersions = getAllInstalledVersions(args.package);
+  // Source of truth for "what's actually installed": yarn.lock, not `npm ls`
+  // (see getYarnLockEntries doc comment for why). Falls back to the hoisted
+  // node_modules version only if yarn.lock has no entries for this package
+  // (shouldn't normally happen, but keeps this resilient).
+  const lockEntries = getYarnLockEntries(args.package);
+  let installedVersions = [...new Set(lockEntries.map((e) => e.version))];
   if (installedVersions.length === 0 && currentVersion) {
     installedVersions = [currentVersion];
   }
@@ -471,8 +468,12 @@ function main(): void {
   }
 
   const resolutionEntries = buildResolutionEntries(
-    args.package,
-    installedVersions,
+    lockEntries.length > 0
+      ? lockEntries
+      : installedVersions.map((version) => ({
+          descriptor: `${args.package}@${version}`,
+          version,
+        })),
     args.fixedVersions,
   );
 
@@ -514,6 +515,27 @@ function main(): void {
   };
 
   console.log(JSON.stringify(result, null, 2));
+}
+
+/**
+ * Fetch available versions from the npm registry.
+ * Uses --prefer-online to bypass stale local cache — important in CI
+ * where a cached older index could mask a newly published fix version.
+ */
+function getAvailableVersions(pkg: string): string[] {
+  const output = runCmd('npm', [
+    'view',
+    pkg,
+    'versions',
+    '--json',
+    '--prefer-online',
+  ]);
+  try {
+    const parsed = JSON.parse(output);
+    return Array.isArray(parsed) ? parsed : [parsed];
+  } catch {
+    return [];
+  }
 }
 
 main();

@@ -7,8 +7,8 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import type { AnalysisResult, FixRunResults, PackageFixResult } from './types';
 import { analyzePackage } from './analyze';
+import type { AnalysisResult, FixRunResults, PackageFixResult } from './types';
 import {
   cleanInstall,
   ensureDir,
@@ -66,6 +66,14 @@ function validateFixes(fixes: ReturnType<typeof parseFixesInput>): void {
  * each pinned version actually landed in the tree. Yarn's deduplication or a
  * conflicting constraint can silently override a resolution entry; catching
  * that here prevents a false "already-remediated" result during verification.
+ *
+ * IMPORTANT: this throws (rather than just warning) when a pinned version
+ * didn't land. A resolution entry that doesn't take effect is not a
+ * successful fix — it previously fell through as a "success" appliedAction
+ * string and only surfaced as a failure later, in verify-fix.ts, which made
+ * the failure harder to attribute and delayed triage by a full extra step.
+ * Throwing here routes it into the same catch block that already marks a
+ * package as needing triage, so the failure is caught where it happens.
  */
 function applyResolutions(
   pkg: string,
@@ -86,17 +94,18 @@ function applyResolutions(
   for (const targetVersion of targetVersions) {
     if (!lsOut.includes(targetVersion)) {
       warnings.push(
-        `⚠ Resolution for ${pkg} → ${targetVersion} may not have taken effect (not found in npm ls output)`,
+        `Resolution for ${pkg} → ${targetVersion} did not take effect (not found in npm ls output)`,
       );
     }
   }
   if (warnings.length) {
-    warnings.forEach((w) => console.warn(w));
+    warnings.forEach((w) => console.warn(`⚠ ${w}`));
+    throw new Error(
+      `Resolution did not take effect for ${pkg}: ${warnings.join(' | ')}`,
+    );
   }
 
-  return `Updated resolutions: ${JSON.stringify(entries)}${
-    warnings.length ? ` [WARNINGS: ${warnings.join(' | ')}]` : ''
-  }`;
+  return `Updated resolutions: ${JSON.stringify(entries)}`;
 }
 
 function applyDirectUpgrade(pkg: string, version: string): string {
