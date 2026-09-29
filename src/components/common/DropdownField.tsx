@@ -62,6 +62,7 @@ const DropdownField: FC<DropdownFieldProps> = ({
       isDisabled={props.disabled}
       isFullWidth={props.fullWidth}
       aria-describedby={helpText ? `${fieldId}-helper` : undefined}
+      data-test={props.dataTest}
     >
       {props.items?.[field.value] ||
         props.title ||

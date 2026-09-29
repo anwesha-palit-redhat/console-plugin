@@ -5,7 +5,13 @@ import ToggleableFieldBase, { CheckboxFieldProps } from './ToggleableFieldBase';
 
 const CheckboxField: FC<CheckboxFieldProps> = (baseProps) => (
   <ToggleableFieldBase {...baseProps}>
-    {(props) => <Checkbox {...props} data-checked-state={props.isChecked} />}
+    {(props) => (
+      <Checkbox
+        {...props}
+        data-checked-state={props.isChecked}
+        data-test={baseProps.dataTest}
+      />
+    )}
   </ToggleableFieldBase>
 );
 

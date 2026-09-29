@@ -56,6 +56,7 @@ const PipelineWorkspaces: FC<PipelineWorkspacesParam> = (props) => {
           name="optional"
           label={t('Optional workspace')}
           className="pf-v6-u-mt-sm"
+          dataTest="optional-workspace"
         />
       </MultiColumnField>
     </div>

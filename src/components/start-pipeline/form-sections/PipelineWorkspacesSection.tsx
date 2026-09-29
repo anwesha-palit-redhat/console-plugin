@@ -93,10 +93,15 @@ const PipelineWorkspacesSection: FC = () => {
       <FormSection title={t('Workspaces')}>
         {workspaces.map((workspace, index) => {
           return (
-            <div className="form-group" key={workspace.name}>
+            <div
+              className="form-group"
+              key={workspace.name}
+              data-test={`workspace ${workspace.name}`}
+            >
               <DropdownField
                 name={`workspaces.${index}.type`}
                 label={workspace.name}
+                dataTest={`workspace-type ${workspace.name}`}
                 items={
                   workspace.optional
                     ? volumeTypeOptions

@@ -98,6 +98,7 @@ const FormFooter: FC<FormFooterProps> = ({
               isDisabled={disableSubmit}
               data-test-id="submit-button"
               data-test="save-changes"
+              data-test-action={submitLabel || t('Save')}
             >
               {submitLabel || t('Save')}
             </Button>

@@ -306,7 +306,7 @@ const QuickSearchModal: FC<QuickSearchModalProps> = ({
                 value={searchTerm}
                 onChange={(_, val) => onSearchChange(val)}
                 aria-label={searchPlaceholder}
-                inputProps={{ autoFocus: true }}
+                inputProps={{ autoFocus: true, 'data-test': 'input' }}
               />
               {searchTerm && (
                 <TextInputGroupUtilities>

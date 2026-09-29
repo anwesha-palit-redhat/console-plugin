@@ -242,6 +242,7 @@ const SyncedEditorField: FC<SyncedEditorFieldProps> = ({
           <Switch
             className="ocs-synced-editor-field__optional-task-param-toggle"
             id="optional-param-toggle"
+            data-test="optional-param-toggle"
             label={t('Show required task params only')}
             isChecked={hideOptionalTaskParam}
             onChange={(_, checked) => setHideOptionalTaskParam(checked)}
