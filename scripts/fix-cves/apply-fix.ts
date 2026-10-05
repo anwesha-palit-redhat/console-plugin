@@ -7,6 +7,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import semver from 'semver';
 import type { AnalysisResult, FixRunResults, PackageFixResult } from './types';
 import { analyzePackage } from './analyze';
 import {
@@ -90,6 +91,33 @@ function applyResolutions(
       );
     }
   }
+  // Post-install scan: warn if vulnerable copies of the package remain in the
+  // tree. Extract all installed versions from `npm ls` output and flag any
+  // that are below the target (fixed) versions for their major line.
+  const escapedPkg = pkg.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const versionRegex = new RegExp(
+    `${escapedPkg}@(\\d+\\.\\d+\\.\\d+[^\\s]*)`,
+    'g',
+  );
+  let vMatch: RegExpExecArray | null;
+  while ((vMatch = versionRegex.exec(lsOut)) !== null) {
+    const installedVer = vMatch[1];
+    if (!semver.valid(installedVer)) continue;
+    if (targetVersions.has(installedVer)) continue;
+    for (const tv of targetVersions) {
+      if (
+        semver.valid(tv) &&
+        semver.major(installedVer) === semver.major(tv) &&
+        semver.lt(installedVer, tv)
+      ) {
+        warnings.push(
+          `⚠ Vulnerable copy remains: ${pkg}@${installedVer} (expected >= ${tv})`,
+        );
+        break;
+      }
+    }
+  }
+
   if (warnings.length) {
     warnings.forEach((w) => console.warn(w));
   }
@@ -104,7 +132,12 @@ function applyDirectUpgrade(pkg: string, version: string): string {
   return `Ran yarn up ${pkg}@${version}`;
 }
 
-function applyParentUpgrade(suggestions: string[]): string {
+function applyParentUpgrade(
+  pkg: string,
+  fixedVersions: string[],
+  suggestions: string[],
+  resolutionEntries: Record<string, string>,
+): string {
   if (!suggestions.length) {
     throw new Error('parent-upgrade strategy but no parentUpgradeSuggestions');
   }
@@ -115,6 +148,16 @@ function applyParentUpgrade(suggestions: string[]): string {
     );
   }
   runCmdOrThrow('yarn', ['up', `${target.pkg}@${target.version}`]);
+
+  // Re-analyze: did the transitive dep actually move to the fixed version?
+  const recheck = analyzePackage(pkg, fixedVersions);
+  if (recheck.strategy !== 'already-remediated') {
+    console.warn(
+      `⚠ Parent upgrade of ${target.pkg} did not fix ${pkg} — falling back to resolution`,
+    );
+    return applyResolutions(pkg, recheck.resolutionEntries);
+  }
+
   return `Ran yarn up ${target.pkg}@${target.version} (${suggestions[0]})`;
 }
 
@@ -125,7 +168,12 @@ function applyStrategy(analysis: AnalysisResult): string {
     case 'direct-upgrade':
       return applyDirectUpgrade(analysis.package, analysis.fixedVersion);
     case 'parent-upgrade':
-      return applyParentUpgrade(analysis.parentUpgradeSuggestions);
+      return applyParentUpgrade(
+        analysis.package,
+        [analysis.fixedVersion],
+        analysis.parentUpgradeSuggestions,
+        analysis.resolutionEntries,
+      );
     case 'resolution': {
       const entries = analysis.resolutionEntries;
       if (Object.keys(entries).length === 0) {
