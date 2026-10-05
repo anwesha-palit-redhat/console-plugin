@@ -73,8 +73,6 @@ function applyResolutions(
 ): string {
   const pjPath = path.join(process.cwd(), 'package.json');
   const pj = JSON.parse(fs.readFileSync(pjPath, 'utf-8'));
-  fs.writeFileSync(pjPath, `${JSON.stringify(pj, null, 2)}\n`, 'utf-8');
-  runCmdOrThrow('yarn', ['install', '--no-immutable']);
 
   const existing = pj.resolutions ?? {};
   for (const key of Object.keys(existing)) {
@@ -83,6 +81,9 @@ function applyResolutions(
     }
   }
   pj.resolutions = { ...existing, ...entries };
+
+  fs.writeFileSync(pjPath, `${JSON.stringify(pj, null, 2)}\n`, 'utf-8');
+  runCmdOrThrow('yarn', ['install', '--no-immutable']);
 
   // Sanity-check: confirm the target version is present in the installed tree.
   // Use a Set so we only check each target version once (multiple descriptors
