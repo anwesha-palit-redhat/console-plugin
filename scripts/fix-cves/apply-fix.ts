@@ -7,8 +7,8 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import type { AnalysisResult, FixRunResults, PackageFixResult } from './types';
 import { analyzePackage } from './analyze';
+import type { AnalysisResult, FixRunResults, PackageFixResult } from './types';
 import {
   cleanInstall,
   ensureDir,
@@ -73,9 +73,16 @@ function applyResolutions(
 ): string {
   const pjPath = path.join(process.cwd(), 'package.json');
   const pj = JSON.parse(fs.readFileSync(pjPath, 'utf-8'));
-  pj.resolutions = { ...(pj.resolutions ?? {}), ...entries };
   fs.writeFileSync(pjPath, `${JSON.stringify(pj, null, 2)}\n`, 'utf-8');
   runCmdOrThrow('yarn', ['install', '--no-immutable']);
+
+  const existing = pj.resolutions ?? {};
+  for (const key of Object.keys(existing)) {
+    if (key.startsWith(`${pkg}@`)) {
+      delete existing[key];
+    }
+  }
+  pj.resolutions = { ...existing, ...entries };
 
   // Sanity-check: confirm the target version is present in the installed tree.
   // Use a Set so we only check each target version once (multiple descriptors
@@ -104,18 +111,27 @@ function applyDirectUpgrade(pkg: string, version: string): string {
   return `Ran yarn up ${pkg}@${version}`;
 }
 
-function applyParentUpgrade(suggestions: string[]): string {
-  if (!suggestions.length) {
-    throw new Error('parent-upgrade strategy but no parentUpgradeSuggestions');
-  }
+function applyParentUpgrade(
+  pkg: string, // the vulnerable transitive dep, e.g. "qs"
+  fixedVersions: string[], // e.g. ["6.16.0"]
+  suggestions: string[],
+  resolutionEntries: Record<string, string>,
+): string {
   const target = parseParentUpgradeTarget(suggestions[0]);
-  if (!target) {
-    throw new Error(
-      `Could not parse parent upgrade suggestion: ${suggestions[0]}`,
-    );
-  }
+  if (!target) throw new Error(`...`);
+
   runCmdOrThrow('yarn', ['up', `${target.pkg}@${target.version}`]);
-  return `Ran yarn up ${target.pkg}@${target.version} (${suggestions[0]})`;
+
+  // Re-analyze: did the transitive dep actually move?
+  const recheck = analyzePackage(pkg, fixedVersions);
+  if (recheck.strategy !== 'already-remediated') {
+    console.warn(
+      `⚠ Parent upgrade of ${target.pkg} did not fix ${pkg} — falling back to resolution`,
+    );
+    return applyResolutions(pkg, resolutionEntries);
+  }
+
+  return `Ran yarn up ${target.pkg}@${target.version}`;
 }
 
 function applyStrategy(analysis: AnalysisResult): string {
@@ -125,7 +141,12 @@ function applyStrategy(analysis: AnalysisResult): string {
     case 'direct-upgrade':
       return applyDirectUpgrade(analysis.package, analysis.fixedVersion);
     case 'parent-upgrade':
-      return applyParentUpgrade(analysis.parentUpgradeSuggestions);
+      return applyParentUpgrade(
+        analysis.package,
+        [analysis.fixedVersion],
+        analysis.parentUpgradeSuggestions,
+        analysis.resolutionEntries,
+      );
     case 'resolution': {
       const entries = analysis.resolutionEntries;
       if (Object.keys(entries).length === 0) {
